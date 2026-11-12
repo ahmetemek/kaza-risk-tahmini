@@ -16,7 +16,7 @@ T = {
     "EN": {
         "title": "🚦 Pre-Crash Traffic Risk Prediction System",
         "subtitle": "An explainable AI interface that predicts high accident risk probabilities **before they occur** using location, time, weather, and road infrastructure data.",
-        "lang_toggle": "🌍 TR / EN",
+        "lang_toggle": "🌍 Türkçe",
         "btn_random": "🎲 Generate Realistic Scenario",
         "btn_random_help": "Fills in realistic coordinates, seasonal weather, and consistent road infrastructure values.",
         "model_error": "`kaza_risk_modeli.joblib` not found. Please place the model file in the same folder as `app.py` and refresh.",
@@ -45,7 +45,6 @@ T = {
         "map_header": "**🗺️ Select Region/State from Map (Click)**",
         "map_tooltip": "Selected Location: {}, {}",
         "map_info": "Location Selected from Map: **Lat {}**, **Lon {}**",
-        "btn_calc": "🔍 Calculate Accident Risk",
         "res_prob": "Calculated Risk Probability",
         "res_delta_prev": "Change from Previous: {:+.2f}%",
         "res_delta_thresh": "Threshold Diff: {:+.2f}%",
@@ -58,12 +57,12 @@ T = {
         "shap_4": "Later hours of the day (**evening/night traffic**) positively contribute to the risk score.",
         "shap_5": "**Weekend** traffic distribution positively impacts the risk score.",
         "def_scenario": "Default scenario (Los Angeles - Friday 17:00). Click different states to see regional risk variations.",
-        "gen_scenario": "Generated Scenario: **{}** | Month {}, **{} {:02d}:00** | {}°F"
+        "gen_scenario": "Generated Scenario: **{}** | Month {}, **{} {:02d}:00** | {}°F",
     },
     "TR": {
         "title": "🚦 Kaza Öncesi Trafik Risk Tahmin Sistemi",
         "subtitle": "Konum, zaman, hava durumu ve yol altyapısı verilerini kullanarak **kaza gerçekleşmeden önce** yüksek risk olasılığını tahmin eden açıklanabilir yapay zekâ arayüzü.",
-        "lang_toggle": "🌍 EN / TR",
+        "lang_toggle": "🌍 English",
         "btn_random": "🎲 Rastgele Gerçekçi Durum Üret",
         "btn_random_help": "Gerçek bir şehir koordinatı, mevsime uygun hava durumu ve tutarlı yol altyapısı değerleri doldurur.",
         "model_error": "`kaza_risk_modeli.joblib` dosyası bulunamadı. Lütfen model dosyasını aynı klasöre koyup sayfayı yenileyin.",
@@ -92,7 +91,6 @@ T = {
         "map_header": "**🗺️ Haritadan Bölge / Eyalet Seç (Tıkla)**",
         "map_tooltip": "Seçili Konum: {}, {}",
         "map_info": "Haritadan Seçilen Konum: **Enlem {}**, **Boylam {}**",
-        "btn_calc": "🔍 Kaza Riskini Hesapla",
         "res_prob": "Hesaplanan Risk Olasılığı",
         "res_delta_prev": "Önceki Duruma Göre: {:+.2f}%",
         "res_delta_thresh": "Eşik Farkı: {:+.2f}%",
@@ -105,34 +103,10 @@ T = {
         "shap_4": "Günün ilerleyen saatleri (**akşam/gece trafiği**) riski artırıcı yönde etki ediyor.",
         "shap_5": "**Hafta sonu** trafik dağılımı risk skoruna pozitif katkı yapıyor.",
         "def_scenario": "Varsayılan başlangıç senaryosu (Los Angeles - Cuma 17:00). Farklı eyaletlere tıklayarak bölgesel risk farkını görebilirsin.",
-        "gen_scenario": "Üretilen Senaryo: **{}** | {}. Ay, **{} {:02d}:00** | {}°F"
-    }
+        "gen_scenario": "Üretilen Senaryo: **{}** | {}. Ay, **{} {:02d}:00** | {}°F",
+    },
 }
 
-# Varsayılan dil EN
-if "lang" not in st.session_state:
-    st.session_state.lang = "EN"
-
-def toggle_lang():
-    st.session_state.lang = "TR" if st.session_state.lang == "EN" else "EN"
-
-t = T[st.session_state.lang]
-
-# --- MODEL YÜKLEME ---
-@st.cache_resource
-def load_model(path="kaza_risk_modeli.joblib"):
-    loaded = joblib.load(path)
-    if isinstance(loaded, dict):
-        model = loaded.get("model", loaded)
-        features = loaded.get("features", getattr(model, "feature_names_in_", None))
-        threshold = float(loaded.get("threshold", 0.6052))
-    else:
-        model = loaded
-        features = getattr(model, "feature_names_in_", None)
-        threshold = 0.6052
-    return model, features, threshold
-
-# --- GERÇEKÇİ SENARYO ÜRETİCİ ---
 SEHIRLER = [
     {"ad": "Los Angeles, CA", "lat": 34.0522, "lon": -118.2437, "iklim": "ilik"},
     {"ad": "New York, NY", "lat": 40.7128, "lon": -74.0060, "iklim": "soguk"},
@@ -144,38 +118,86 @@ SEHIRLER = [
     {"ad": "Seattle, WA", "lat": 47.6062, "lon": -122.3321, "iklim": "soguk"},
 ]
 
+WIDGET_ALANLARI = [
+    "enlem", "boylam", "ay", "saat", "gun",
+    "sicaklik", "nem", "basinc", "ruzgar",
+    "kavsak", "isik", "yaya", "altyapi", "threshold",
+]
+
+
+@st.cache_resource
+def load_model(path="kaza_risk_modeli.joblib"):
+    loaded = joblib.load(path)
+    if isinstance(loaded, dict):
+        model = loaded.get("model", loaded)
+        features = loaded.get("features", loaded.get("ozellikler", getattr(model, "feature_names_in_", None)))
+        threshold = float(loaded.get("threshold", loaded.get("optimal_esik", 0.6052)))
+    else:
+        model = loaded
+        features = getattr(model, "feature_names_in_", None)
+        threshold = 0.6052
+    return model, features, threshold
+
+
 def varsayilan_durumlari_yukle():
     varsayilanlar = {
-        "enlem": 34.0522,
-        "boylam": -118.2437,
-        "ay": 10,
-        "saat": 17,
-        "haftanin_gunu": 4,
-        "sicaklik": 68.0,
-        "nem_orani": 55.0,
-        "basinc": 29.95,
-        "ruzgar_hizi": 8.0,
-        "kavsak": True,
-        "trafik_isigi": False,
-        "yaya_gecidi": False,
-        "altyapi_yogunlugu": 1,
+        "lang": "EN",
+        "val_enlem": 34.0522,
+        "val_boylam": -118.2437,
+        "val_ay": 10,
+        "val_saat": 17,
+        "val_gun": 4,
+        "val_sicaklik": 68.0,
+        "val_nem": 55.0,
+        "val_basinc": 29.95,
+        "val_ruzgar": 8.0,
+        "val_kavsak": True,
+        "val_isik": False,
+        "val_yaya": False,
+        "val_altyapi": 1,
+        "val_threshold": 0.6052,
         "son_tiklanan": None,
         "bekleyen_koordinat": None,
         "harita_zoom": 4,
         "onceki_risk": None,
-        "senaryo_bilgi": T["EN"]["def_scenario"],
+        "senaryo_tipi": "default",
+        "senaryo_veri": (),
     }
     for k, v in varsayilanlar.items():
         if k not in st.session_state:
             st.session_state[k] = v
+
+
+def widgettan_hafizaya_aktar(dil_kodu):
+    for alan in WIDGET_ALANLARI:
+        w_key = f"w_{alan}_{dil_kodu}"
+        if w_key in st.session_state:
+            st.session_state[f"val_{alan}"] = st.session_state[w_key]
+
+
+def hafizadan_widgeta_aktar(dil_kodu):
+    for alan in WIDGET_ALANLARI:
+        w_key = f"w_{alan}_{dil_kodu}"
+        if w_key in st.session_state:
+            st.session_state[w_key] = st.session_state[f"val_{alan}"]
+
+
+def dil_degistir():
+    widgettan_hafizaya_aktar(st.session_state.lang)
+    st.session_state.lang = "TR" if st.session_state.lang == "EN" else "EN"
+
 
 def rastgele_senaryo_uret():
     sehir = random.choice(SEHIRLER)
     enlem = round(sehir["lat"] + random.uniform(-0.18, 0.18), 4)
     boylam = round(sehir["lon"] + random.uniform(-0.18, 0.18), 4)
     ay = random.randint(1, 12)
-    saat = random.choices(range(24), weights=[1, 1, 1, 1, 1, 2, 4, 6, 6, 4, 3, 4, 5, 4, 5, 6, 7, 7, 5, 4, 3, 2, 2, 1], k=1)[0]
-    haftanin_gunu = random.randint(0, 6)
+    saat = random.choices(
+        range(24),
+        weights=[1, 1, 1, 1, 1, 2, 4, 6, 6, 4, 3, 4, 5, 4, 5, 6, 7, 7, 5, 4, 3, 2, 2, 1],
+        k=1,
+    )[0]
+    gun = random.randint(0, 6)
 
     if ay in [12, 1, 2]:
         sicaklik = random.uniform(22.0, 48.0) if sehir["iklim"] == "soguk" else random.uniform(52.0, 76.0)
@@ -184,47 +206,49 @@ def rastgele_senaryo_uret():
     else:
         sicaklik = random.uniform(48.0, 78.0)
 
-    nem_orani = float(random.randint(25, 95))
+    sicaklik = round(sicaklik, 1)
+    nem = float(random.randint(25, 95))
     basinc = round(random.uniform(29.45, 30.45), 2)
-    ruzgar_hizi = round(random.triangular(0.0, 28.0, 7.5), 1)
+    ruzgar = round(random.triangular(0.0, 28.0, 7.5), 1)
 
     kavsak = random.random() < 0.30
-    trafik_isigi = random.random() < 0.25
-    yaya_gecidi = random.random() < 0.18
-    aktif_bilesen = int(kavsak) + int(trafik_isigi) + int(yaya_gecidi)
-    altyapi_yogunlugu = min(10, aktif_bilesen + random.choice([0, 0, 1, 2]))
+    isik = random.random() < 0.25
+    yaya = random.random() < 0.18
+    aktif_bilesen = int(kavsak) + int(isik) + int(yaya)
+    altyapi = min(10, aktif_bilesen + random.choice([0, 0, 1, 2]))
 
-    gun_adi = t["days"][haftanin_gunu]
+    st.session_state.val_enlem = enlem
+    st.session_state.val_boylam = boylam
+    st.session_state.val_ay = ay
+    st.session_state.val_saat = saat
+    st.session_state.val_gun = gun
+    st.session_state.val_sicaklik = sicaklik
+    st.session_state.val_nem = nem
+    st.session_state.val_basinc = basinc
+    st.session_state.val_ruzgar = ruzgar
+    st.session_state.val_kavsak = kavsak
+    st.session_state.val_isik = isik
+    st.session_state.val_yaya = yaya
+    st.session_state.val_altyapi = altyapi
+    st.session_state.senaryo_tipi = "random"
+    st.session_state.senaryo_veri = (sehir["ad"], ay, gun, saat, sicaklik)
 
-    st.session_state.enlem = enlem
-    st.session_state.boylam = boylam
-    st.session_state.ay = ay
-    st.session_state.saat = saat
-    st.session_state.haftanin_gunu = haftanin_gunu
-    st.session_state.sicaklik = round(sicaklik, 1)
-    st.session_state.nem_orani = nem_orani
-    st.session_state.basinc = basinc
-    st.session_state.ruzgar_hizi = ruzgar_hizi
-    st.session_state.kavsak = kavsak
-    st.session_state.trafik_isigi = trafik_isigi
-    st.session_state.yaya_gecidi = yaya_gecidi
-    st.session_state.altyapi_yogunlugu = altyapi_yogunlugu
-    
-    if st.session_state.lang == "EN":
-        st.session_state.senaryo_bilgi = t["gen_scenario"].format(sehir['ad'], ay, gun_adi, saat, round(sicaklik, 1))
-    else:
-        st.session_state.senaryo_bilgi = t["gen_scenario"].format(sehir['ad'], ay, gun_adi, saat, round(sicaklik, 1))
+    hafizadan_widgeta_aktar(st.session_state.lang)
+
 
 varsayilan_durumlari_yukle()
+lang = st.session_state.lang
+t = T[lang]
 
 if st.session_state.bekleyen_koordinat is not None:
     yeni_lat, yeni_lon = st.session_state.bekleyen_koordinat
-    st.session_state.enlem = yeni_lat
-    st.session_state.boylam = yeni_lon
+    st.session_state.val_enlem = yeni_lat
+    st.session_state.val_boylam = yeni_lon
     st.session_state.bekleyen_koordinat = None
+    hafizadan_widgeta_aktar(lang)
 
-# --- BAŞLIK ---
-col_head, col_lang, col_btn = st.columns([6, 1, 2])
+# --- BAŞLIK VE BUTONLAR ---
+col_head, col_lang, col_btn = st.columns([6, 1.2, 2.2])
 
 with col_head:
     st.title(t["title"])
@@ -232,13 +256,21 @@ with col_head:
 with col_lang:
     st.write("")
     st.write("")
-    st.button(t["lang_toggle"], on_click=toggle_lang, use_container_width=True)
+    st.button(t["lang_toggle"], on_click=dil_degistir, use_container_width=True)
 with col_btn:
     st.write("")
     st.write("")
     st.button(t["btn_random"], on_click=rastgele_senaryo_uret, use_container_width=True, help=t["btn_random_help"])
 
-st.info(st.session_state.senaryo_bilgi)
+# Dinamik dil destekli bilgi banner'ı
+if st.session_state.senaryo_tipi == "random":
+    sehir_ad, s_ay, s_gun, s_saat, s_sic = st.session_state.senaryo_veri
+    st.info(t["gen_scenario"].format(sehir_ad, s_ay, t["days"][s_gun], s_saat, s_sic))
+elif st.session_state.senaryo_tipi == "map":
+    m_lat, m_lon = st.session_state.senaryo_veri
+    st.info(t["map_info"].format(m_lat, m_lon))
+else:
+    st.info(t["def_scenario"])
 
 try:
     model, expected_features, default_threshold = load_model()
@@ -256,10 +288,12 @@ with st.sidebar:
         t["sidebar_slider"],
         min_value=0.10,
         max_value=0.90,
-        value=round(default_threshold, 4),
+        value=float(st.session_state.val_threshold),
         step=0.01,
         help=t["sidebar_help"],
+        key=f"w_threshold_{lang}",
     )
+    st.session_state.val_threshold = threshold
     st.caption(t["sidebar_caption"].format(f"{threshold:.4f}"))
 
 # --- GİRDİ ALANLARI ---
@@ -267,39 +301,92 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
     st.subheader(t["col1_header"])
-    st.number_input(t["lat"], min_value=-90.0, max_value=90.0, format="%.4f", key="enlem")
-    st.number_input(t["lon"], min_value=-180.0, max_value=180.0, format="%.4f", key="boylam")
-    st.slider(t["month"], min_value=1, max_value=12, key="ay")
-    st.slider(t["hour"], min_value=0, max_value=23, key="saat")
-    st.selectbox(t["day"], options=list(range(7)), format_func=lambda x: t["days"][x], key="haftanin_gunu")
-    hafta_sonu = 1 if st.session_state.haftanin_gunu >= 5 else 0
+    enlem = st.number_input(
+        t["lat"], min_value=-90.0, max_value=90.0,
+        value=float(st.session_state.val_enlem), format="%.4f", key=f"w_enlem_{lang}"
+    )
+    boylam = st.number_input(
+        t["lon"], min_value=-180.0, max_value=180.0,
+        value=float(st.session_state.val_boylam), format="%.4f", key=f"w_boylam_{lang}"
+    )
+    ay = st.slider(
+        t["month"], min_value=1, max_value=12,
+        value=int(st.session_state.val_ay), key=f"w_ay_{lang}"
+    )
+    saat = st.slider(
+        t["hour"], min_value=0, max_value=23,
+        value=int(st.session_state.val_saat), key=f"w_saat_{lang}"
+    )
+    gun = st.selectbox(
+        t["day"], options=list(range(7)),
+        index=int(st.session_state.val_gun),
+        format_func=lambda x: t["days"][x], key=f"w_gun_{lang}"
+    )
+
+    st.session_state.val_enlem = enlem
+    st.session_state.val_boylam = boylam
+    st.session_state.val_ay = ay
+    st.session_state.val_saat = saat
+    st.session_state.val_gun = gun
+    hafta_sonu = 1 if gun >= 5 else 0
 
 with col2:
     st.subheader(t["col2_header"])
-    st.slider(t["temp"], min_value=-20.0, max_value=120.0, step=0.5, key="sicaklik")
-    st.slider(t["hum"], min_value=0.0, max_value=100.0, step=1.0, key="nem_orani")
-    st.slider(t["pres"], min_value=28.0, max_value=31.5, step=0.01, key="basinc")
-    st.slider(t["wind"], min_value=0.0, max_value=60.0, step=0.5, key="ruzgar_hizi")
+    sicaklik = st.slider(
+        t["temp"], min_value=-20.0, max_value=120.0,
+        value=float(st.session_state.val_sicaklik), step=0.5, key=f"w_sicaklik_{lang}"
+    )
+    nem = st.slider(
+        t["hum"], min_value=0.0, max_value=100.0,
+        value=float(st.session_state.val_nem), step=1.0, key=f"w_nem_{lang}"
+    )
+    basinc = st.slider(
+        t["pres"], min_value=28.0, max_value=31.5,
+        value=float(st.session_state.val_basinc), step=0.01, key=f"w_basinc_{lang}"
+    )
+    ruzgar = st.slider(
+        t["wind"], min_value=0.0, max_value=60.0,
+        value=float(st.session_state.val_ruzgar), step=0.5, key=f"w_ruzgar_{lang}"
+    )
+
+    st.session_state.val_sicaklik = sicaklik
+    st.session_state.val_nem = nem
+    st.session_state.val_basinc = basinc
+    st.session_state.val_ruzgar = ruzgar
 
 with col3:
     st.subheader(t["col3_header"])
-    st.toggle(t["junc"], key="kavsak")
-    st.toggle(t["signal"], key="trafik_isigi")
-    st.toggle(t["cross"], key="yaya_gecidi")
-    st.slider(t["poi"], min_value=0, max_value=10, key="altyapi_yogunlugu", help=t["poi_help"])
+    kavsak = st.toggle(t["junc"], value=bool(st.session_state.val_kavsak), key=f"w_kavsak_{lang}")
+    isik = st.toggle(t["signal"], value=bool(st.session_state.val_isik), key=f"w_isik_{lang}")
+    yaya = st.toggle(t["cross"], value=bool(st.session_state.val_yaya), key=f"w_yaya_{lang}")
+    altyapi = st.slider(
+        t["poi"], min_value=0, max_value=10,
+        value=int(st.session_state.val_altyapi), help=t["poi_help"], key=f"w_altyapi_{lang}"
+    )
+
+    st.session_state.val_kavsak = kavsak
+    st.session_state.val_isik = isik
+    st.session_state.val_yaya = yaya
+    st.session_state.val_altyapi = altyapi
 
     st.markdown(t["map_header"])
     harita = folium.Map(
-        location=[st.session_state.enlem, st.session_state.boylam],
+        location=[enlem, boylam],
         zoom_start=st.session_state.harita_zoom,
     )
     folium.Marker(
-        [st.session_state.enlem, st.session_state.boylam],
-        tooltip=t["map_tooltip"].format(st.session_state.enlem, st.session_state.boylam),
+        [enlem, boylam],
+        tooltip=t["map_tooltip"].format(enlem, boylam),
         icon=folium.Icon(color="red", icon="info-sign"),
     ).add_to(harita)
 
-    harita_verisi = st_folium(harita, height=240, use_container_width=True, key="konum_haritasi")
+    harita_verisi = st_folium(
+        harita,
+        height=240,
+        use_container_width=True,
+        returned_objects=["last_clicked", "zoom"],
+        key="konum_haritasi",
+    )
 
     if harita_verisi and harita_verisi.get("last_clicked"):
         tiklanan_lat = round(harita_verisi["last_clicked"]["lat"], 4)
@@ -311,25 +398,26 @@ with col3:
             st.session_state.bekleyen_koordinat = yeni_koordinat
             if harita_verisi.get("zoom"):
                 st.session_state.harita_zoom = harita_verisi["zoom"]
-            st.session_state.senaryo_bilgi = t["map_info"].format(tiklanan_lat, tiklanan_lon)
+            st.session_state.senaryo_tipi = "map"
+            st.session_state.senaryo_veri = (tiklanan_lat, tiklanan_lon)
             st.rerun()
 
-# --- VERİ HAZIRLAMA (COLAB SIRA MANTIĞI) ---
+# --- VERİ HAZIRLAMA (COLAB ÖZELLİK SIRASI) ---
 input_data = {
-    "Boylam": float(st.session_state.boylam),
-    "Enlem": float(st.session_state.enlem),
-    "Basinc": float(st.session_state.basinc),
-    "Trafik_Isigi": int(st.session_state.trafik_isigi),
-    "Ruzgar_Hizi": float(st.session_state.ruzgar_hizi),
-    "Altyapi_Yogunlugu": int(st.session_state.altyapi_yogunlugu),
-    "Yaya_Gecidi": int(st.session_state.yaya_gecidi),
-    "Kavsak": int(st.session_state.kavsak),
-    "Saat": int(st.session_state.saat),
-    "Sicaklik": float(st.session_state.sicaklik),
-    "Nem_Orani": float(st.session_state.nem_orani),
-    "Haftanin_Gunu": int(st.session_state.haftanin_gunu),
-    "Ay": int(st.session_state.ay),
-    "Hafta_Sonu": int(hafta_sonu)
+    "Boylam": float(boylam),
+    "Enlem": float(enlem),
+    "Basinc": float(basinc),
+    "Trafik_Isigi": int(isik),
+    "Ruzgar_Hizi": float(ruzgar),
+    "Altyapi_Yogunlugu": int(altyapi),
+    "Yaya_Gecidi": int(yaya),
+    "Kavsak": int(kavsak),
+    "Saat": int(saat),
+    "Sicaklik": float(sicaklik),
+    "Nem_Orani": float(nem),
+    "Haftanin_Gunu": int(gun),
+    "Ay": int(ay),
+    "Hafta_Sonu": int(hafta_sonu),
 }
 input_df = pd.DataFrame([input_data])
 
@@ -350,7 +438,12 @@ try:
     res_col1, res_col2 = st.columns([1, 2])
 
     with res_col1:
-        st.metric(label=t["res_prob"], value=f"{risk_olasiligi * 100:.2f}%", delta=degisim_metni, delta_color="inverse")
+        st.metric(
+            label=t["res_prob"],
+            value=f"{risk_olasiligi * 100:.2f}%",
+            delta=degisim_metni,
+            delta_color="inverse",
+        )
         st.progress(min(max(risk_olasiligi, 0.0), 1.0))
 
     with res_col2:
@@ -360,13 +453,13 @@ try:
             st.success(t["alert_low"].format(risk_olasiligi * 100, threshold * 100))
 
         etkenler = []
-        if st.session_state.kavsak and not st.session_state.trafik_isigi:
+        if kavsak and not isik:
             etkenler.append(t["shap_1"])
-        elif st.session_state.kavsak:
+        elif kavsak:
             etkenler.append(t["shap_2"])
-        if st.session_state.altyapi_yogunlugu == 0:
+        if altyapi == 0:
             etkenler.append(t["shap_3"])
-        if st.session_state.saat >= 16:
+        if saat >= 16:
             etkenler.append(t["shap_4"])
         if hafta_sonu == 1:
             etkenler.append(t["shap_5"])
