@@ -55,6 +55,7 @@ def varsayilan_durumlari_yukle():
         "yaya_gecidi": False,
         "altyapi_yogunlugu": 1,
         "son_tiklanan": None,
+        "bekleyen_koordinat": None,
         "senaryo_bilgi": "Varsayılan başlangıç senaryosu (Los Angeles - Cuma 17:00)",
     }
     for k, v in varsayilanlar.items():
@@ -115,6 +116,13 @@ def rastgele_senaryo_uret():
 
 
 varsayilan_durumlari_yukle()
+
+# Haritadan yeni bir koordinat tıklandıysa kutucuklar çizilmeden önce uygula
+if st.session_state.bekleyen_koordinat is not None:
+    yeni_lat, yeni_lon = st.session_state.bekleyen_koordinat
+    st.session_state.enlem = yeni_lat
+    st.session_state.boylam = yeni_lon
+    st.session_state.bekleyen_koordinat = None
 
 # --- BAŞLIK VE RASTGELE SENARYO BUTONU ---
 ust_sol, ust_sag = st.columns([3, 1])
@@ -240,8 +248,7 @@ with col3:
 
         if yeni_koordinat != st.session_state.son_tiklanan:
             st.session_state.son_tiklanan = yeni_koordinat
-            st.session_state.enlem = tiklanan_lat
-            st.session_state.boylam = tiklanan_lon
+            st.session_state.bekleyen_koordinat = yeni_koordinat
             st.session_state.senaryo_bilgi = (
                 f"Haritadan Seçilen Konum: **Enlem {tiklanan_lat}**, **Boylam {tiklanan_lon}**"
             )
