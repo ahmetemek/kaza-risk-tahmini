@@ -45,7 +45,7 @@ The system was trained on the massive **US Accidents Dataset (approx. 7.7 Millio
 To test the project on your local machine, follow these steps:
 
 Clone the Repository:
-git clone [https://github.com/](https://github.com/)[Your-GitHub-Username]/kaza-risk-tahmini.git
+git clone https://github.com/ahmetemek/kaza-risk-tahmini.git
 cd kaza-risk-tahmini
 Install Required Libraries:
 Ensure you have Python installed, then run:
@@ -104,7 +104,7 @@ Sistem, **US Accidents (Yaklaşık 7.7 Milyon Kayıt)** veri seti üzerinde eği
 Projeyi kendi bilgisayarınızda test etmek için aşağıdaki adımları izleyin:
 
 Repoyu Klonlayın:
-git clone [https://github.com/](https://github.com/)[Senin-GitHub-Kullanici-Adin]/kaza-risk-tahmini.git
+git clone https://github.com/ahmetemek/kaza-risk-tahmini.git
 cd kaza-risk-tahmini
 Gerekli Kütüphaneleri Yükleyin:
 Bilgisayarınızda Python yüklü olduğundan emin olun.
