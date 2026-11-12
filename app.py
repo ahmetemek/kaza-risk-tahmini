@@ -254,28 +254,27 @@ with col3:
             )
             st.rerun()
 
-# --- VERİ HAZIRLAMA VE TAHMİN ---
+# --- VERİ HAZIRLAMA VE ANLIK CANLI TAHMİN ---
 input_data = {
-    "Enlem": float(st.session_state.enlem),
     "Boylam": float(st.session_state.boylam),
+    "Enlem": float(st.session_state.enlem),
+    "Basinc": float(st.session_state.basinc),
+    "Trafik_Isigi": int(st.session_state.trafik_isigi),
+    "Ruzgar_Hizi": float(st.session_state.ruzgar_hizi),
+    "Altyapi_Yogunlugu": int(st.session_state.altyapi_yogunlugu),
+    "Yaya_Gecidi": int(st.session_state.yaya_gecidi),
+    "Kavsak": int(st.session_state.kavsak),
+    "Saat": int(st.session_state.saat),
     "Sicaklik": float(st.session_state.sicaklik),
     "Nem_Orani": float(st.session_state.nem_orani),
-    "Basinc": float(st.session_state.basinc),
-    "Ruzgar_Hizi": float(st.session_state.ruzgar_hizi),
-    "Saat": int(st.session_state.saat),
     "Haftanin_Gunu": int(st.session_state.haftanin_gunu),
-    "Hafta_Sonu": int(hafta_sonu),
     "Ay": int(st.session_state.ay),
-    "Kavsak": int(st.session_state.kavsak),
-    "Trafik_Isigi": int(st.session_state.trafik_isigi),
-    "Yaya_Gecidi": int(st.session_state.yaya_gecidi),
-    "Altyapi_Yogunlugu": int(st.session_state.altyapi_yogunlugu),
+    "Hafta_Sonu": int(hafta_sonu)
 }
 
 input_df = pd.DataFrame([input_data])
 
-if expected_features is not None:
-    input_df = input_df[list(expected_features)]
+input_df = pd.DataFrame([input_data])
 
 st.divider()
 
