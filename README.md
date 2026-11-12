@@ -1,3 +1,45 @@
+# 🚦 Smart City Mobility: Pre-Crash Risk Prediction & Explainable AI (XAI) Interface
+
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.32.0-FF4B4B?logo=streamlit&logoColor=white)
+![LightGBM](https://img.shields.io/badge/LightGBM-4.3.0-brightgreen)
+![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.4.0-F7931E?logo=scikit-learn&logoColor=white)
+![Folium](https://img.shields.io/badge/Folium-Map_Integration-77B829)
+
+This project is a machine learning system designed to predict traffic accident risks **before they occur** based on spatial, temporal, and meteorological data, strictly excluding post-crash data leakage variables. It was developed as a term project for the **Data Mining and Data Visualization** course.
+
+The interactive web application is deployed live on Streamlit Community Cloud.
+👉 **[Try the Live Demo Here](https://kaza-risk-tahmini-ajrghdxwg6dqjmmaitdygr.streamlit.app/)**
+
+---
+
+## 🌟 Key Features
+
+- **Live Map (Folium) Integration:** Users can click on any location across the USA on the interactive map, and the background model instantly calculates the regional risk score for that specific coordinate.
+- **Realistic Scenario Generator (RNG):** With a single click, the app generates geographically and meteorologically consistent random accident scenarios (e.g., heavy traffic on a winter evening in Chicago).
+- **Explainable AI (SHAP):** Moving beyond simple "High/Low Risk" outputs, the system provides text-based summaries explaining *why* a risk is high or low (e.g., lack of traffic signals at a junction), based on SHAP (SHapley Additive exPlanations) analysis.
+- **Optimal Decision Threshold:** Instead of the standard 0.50 threshold, the model utilizes an optimized threshold of **0.6052** (derived from the Precision-Recall curve) to maximize the F1-Score and significantly reduce false positives.
+
+## 🧠 Model Architecture & Dataset
+
+The system was trained on the massive **US Accidents Dataset (approx. 7.7 Million records)**. Following comprehensive Data Mining processes (EDA, data cleaning, and feature engineering), 14 pre-crash features (Latitude, Longitude, Pressure, Hour, Junction, etc.) were selected to prevent any data leakage.
+
+**Model Performance (LightGBM Classifier):**
+| Scenario | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| Default Threshold (0.50) | 74.34% | 41.51% | 77.54% | 0.5407 | **0.8379** |
+| **Optimal Threshold (0.6052)** | **80.19%** | **49.35%** | 64.10% | **0.5576** | **0.8379** |
+
+*Note: The model is primarily optimized against class imbalance using `class_weight='balanced'`.*
+
+## 📂 Project Structure
+
+```text
+├── app.py                      # Main Streamlit web interface and app logic
+├── kaza_risk_modeli.joblib     # Pre-trained LightGBM model and threshold settings
+├── requirements.txt            # Required Python libraries for deployment
+└── README.md                   # Project documentation
+
 # 🚦 Akıllı Şehir Ulaşımı: Kaza Öncesi Risk Tahmini ve Açıklanabilir Yapay Zekâ (XAI) Arayüzü
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python&logoColor=white)
