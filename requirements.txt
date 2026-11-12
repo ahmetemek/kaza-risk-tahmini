@@ -6,3 +6,4 @@ lightgbm
 xgboost
 folium
 streamlit-folium
+shap
