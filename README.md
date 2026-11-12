@@ -39,6 +39,23 @@ The system was trained on the massive **US Accidents Dataset (approx. 7.7 Millio
 ├── kaza_risk_modeli.joblib     # Pre-trained LightGBM model and threshold settings
 ├── requirements.txt            # Required Python libraries for deployment
 └── README.md                   # Project documentation
+```
+
+🚀 Running Locally
+To test the project on your local machine, follow these steps:
+
+Clone the Repository:
+git clone [https://github.com/](https://github.com/)[Your-GitHub-Username]/kaza-risk-tahmini.git
+cd kaza-risk-tahmini
+Install Required Libraries:
+Ensure you have Python installed, then run:
+pip install -r requirements.txt
+Launch the Application:
+streamlit run app.py
+Your browser will automatically open the app at http://localhost:8501.
+
+👨‍💻 Developer
+[Ahmet Emek] - Aydın Adnan Menderes University - Artificial Intelligence Operation
 
 # 🚦 Akıllı Şehir Ulaşımı: Kaza Öncesi Risk Tahmini ve Açıklanabilir Yapay Zekâ (XAI) Arayüzü
 
@@ -81,3 +98,20 @@ Sistem, **US Accidents (Yaklaşık 7.7 Milyon Kayıt)** veri seti üzerinde eği
 ├── kaza_risk_modeli.joblib     # Eğitilmiş LightGBM modeli ve eşik değerleri
 ├── requirements.txt            # Uygulamanın çalışması için gerekli kütüphaneler
 └── README.md                   # Proje dokümantasyonu
+```
+
+🚀 Yerelde (Local) Çalıştırma
+Projeyi kendi bilgisayarınızda test etmek için aşağıdaki adımları izleyin:
+
+Repoyu Klonlayın:
+git clone [https://github.com/](https://github.com/)[Senin-GitHub-Kullanici-Adin]/kaza-risk-tahmini.git
+cd kaza-risk-tahmini
+Gerekli Kütüphaneleri Yükleyin:
+Bilgisayarınızda Python yüklü olduğundan emin olun.
+pip install -r requirements.txt
+Uygulamayı Başlatın:
+streamlit run app.py
+Tarayıcınız otomatik olarak açılacak ve uygulama http://localhost:8501 adresinde çalışacaktır.
+
+👨‍💻 Geliştirici
+[Ahmet Emek] - Aydın Adnan Menderes Üniversitesi - Yapay Zekâ Operatörlüğü
