@@ -2,6 +2,7 @@ import random
 import folium
 import joblib
 import pandas as pd
+import shap
 import streamlit as st
 from streamlit_folium import st_folium
 
@@ -50,12 +51,25 @@ T = {
         "res_delta_thresh": "Threshold Diff: {:+.2f}%",
         "alert_high": "### ⚠️ HIGH RISK DETECTED\nThe predicted risk score (**{:.2f}%**) is above the decision threshold (**{:.2f}%**).",
         "alert_low": "### ✅ LOW / NORMAL RISK\nThe predicted risk score (**{:.2f}%**) is below the decision threshold (**{:.2f}%**).",
-        "shap_header": "**Key Risk Dynamics (SHAP Analysis Based):**",
-        "shap_1": "The presence of a **junction** without a traffic signal increases the risk score.",
-        "shap_2": "Although **junction** geometry increases risk, the **traffic signal** control balances it.",
-        "shap_3": "Low **infrastructure density (0)** indicates a lack of speed control mechanisms.",
-        "shap_4": "Later hours of the day (**evening/night traffic**) positively contribute to the risk score.",
-        "shap_5": "**Weekend** traffic distribution positively impacts the risk score.",
+        "shap_header": "**Live Feature Contributions (Real-Time SHAP Values):**",
+        "shap_up": "increases risk",
+        "shap_down": "decreases risk",
+        "feat_names": {
+            "Boylam": "Longitude",
+            "Enlem": "Latitude",
+            "Basinc": "Barometric Pressure",
+            "Trafik_Isigi": "Traffic Signal (Major Intersection)",
+            "Ruzgar_Hizi": "Wind Speed",
+            "Altyapi_Yogunlugu": "Infrastructure Density",
+            "Yaya_Gecidi": "Pedestrian Crossing",
+            "Kavsak": "Junction Geometry",
+            "Saat": "Hour of Day",
+            "Sicaklik": "Temperature",
+            "Nem_Orani": "Humidity",
+            "Haftanin_Gunu": "Day of Week",
+            "Ay": "Month",
+            "Hafta_Sonu": "Weekend Indicator",
+        },
         "def_scenario": "Default scenario (Los Angeles - Friday 17:00). Click different states to see regional risk variations.",
         "gen_scenario": "Generated Scenario: **{}** | Month {}, **{} {:02d}:00** | {}°F",
     },
@@ -96,12 +110,25 @@ T = {
         "res_delta_thresh": "Eşik Farkı: {:+.2f}%",
         "alert_high": "### ⚠️ YÜKSEK RİSK TESPİT EDİLDİ\nTahmin edilen risk skoru (**{:.2f}%**), belirlenen karar eşiği olan **{:.2f}%** değerinin üzerinde.",
         "alert_low": "### ✅ DÜŞÜK / NORMAL RİSK\nTahmin edilen risk skoru (**{:.2f}%**), belirlenen karar eşiği olan **{:.2f}%** değerinin altında.",
-        "shap_header": "**Öne Çıkan Risk Dinamikleri (SHAP Analizi Temelli):**",
-        "shap_1": "Trafik ışığı bulunmayan **kavşak** noktası risk skorunu yukarı çekiyor.",
-        "shap_2": "**Kavşak** geometrisi riski artırsa da **trafik ışığı** kontrolü riski dengeliyor.",
-        "shap_3": "Düşük **altyapı yoğunluğu (0)** hız kontrolü eksikliğini işaret ediyor.",
-        "shap_4": "Günün ilerleyen saatleri (**akşam/gece trafiği**) riski artırıcı yönde etki ediyor.",
-        "shap_5": "**Hafta sonu** trafik dağılımı risk skoruna pozitif katkı yapıyor.",
+        "shap_header": "**Canlı Özellik Katkıları (Gerçek Zamanlı SHAP Değerleri):**",
+        "shap_up": "riski artırıyor",
+        "shap_down": "riski azaltıyor",
+        "feat_names": {
+            "Boylam": "Boylam (Bölgesel Konum)",
+            "Enlem": "Enlem (Bölgesel Konum)",
+            "Basinc": "Atmosfer Basıncı",
+            "Trafik_Isigi": "Trafik Işığı (Yoğun Ana Arter Kavşağı)",
+            "Ruzgar_Hizi": "Rüzgar Hızı",
+            "Altyapi_Yogunlugu": "Altyapı Yoğunluğu",
+            "Yaya_Gecidi": "Yaya Geçidi",
+            "Kavsak": "Kavşak Geometrisi",
+            "Saat": "Günün Saati",
+            "Sicaklik": "Hava Sıcaklığı",
+            "Nem_Orani": "Nem Oranı",
+            "Haftanin_Gunu": "Haftanın Günü",
+            "Ay": "Yılın Ayı",
+            "Hafta_Sonu": "Hafta Sonu Durumu",
+        },
         "def_scenario": "Varsayılan başlangıç senaryosu (Los Angeles - Cuma 17:00). Farklı eyaletlere tıklayarak bölgesel risk farkını görebilirsin.",
         "gen_scenario": "Üretilen Senaryo: **{}** | {}. Ay, **{} {:02d}:00** | {}°F",
     },
@@ -126,7 +153,7 @@ WIDGET_ALANLARI = [
 
 
 @st.cache_resource
-def load_model(path="kaza_risk_modeli.joblib"):
+def load_model_and_explainer(path="kaza_risk_modeli.joblib"):
     loaded = joblib.load(path)
     if isinstance(loaded, dict):
         model = loaded.get("model", loaded)
@@ -136,7 +163,8 @@ def load_model(path="kaza_risk_modeli.joblib"):
         model = loaded
         features = getattr(model, "feature_names_in_", None)
         threshold = 0.6052
-    return model, features, threshold
+    explainer = shap.TreeExplainer(model)
+    return model, explainer, features, threshold
 
 
 def varsayilan_durumlari_yukle():
@@ -262,7 +290,6 @@ with col_btn:
     st.write("")
     st.button(t["btn_random"], on_click=rastgele_senaryo_uret, use_container_width=True, help=t["btn_random_help"])
 
-# Dinamik dil destekli bilgi banner'ı
 if st.session_state.senaryo_tipi == "random":
     sehir_ad, s_ay, s_gun, s_saat, s_sic = st.session_state.senaryo_veri
     st.info(t["gen_scenario"].format(sehir_ad, s_ay, t["days"][s_gun], s_saat, s_sic))
@@ -273,7 +300,7 @@ else:
     st.info(t["def_scenario"])
 
 try:
-    model, expected_features, default_threshold = load_model()
+    model, explainer, expected_features, default_threshold = load_model_and_explainer()
 except FileNotFoundError:
     st.error(t["model_error"])
     st.stop()
@@ -423,10 +450,21 @@ input_df = pd.DataFrame([input_data])
 
 st.divider()
 
-# --- TAHMİN VE SONUÇLAR ---
+# --- TAHMİN VE GERÇEK ZAMANLI SHAP AÇIKLAMASI ---
 try:
     risk_olasiligi = float(model.predict_proba(input_df)[0][1])
     yuksek_risk = risk_olasiligi >= threshold
+
+    # Gerçek SHAP değerlerini hesapla
+    shap_vals = explainer.shap_values(input_df)
+    if isinstance(shap_vals, list):
+        shap_vals = shap_vals[1][0]
+    else:
+        shap_vals = shap_vals[0]
+
+    katkilar = list(zip(input_df.columns, input_df.iloc[0].values, shap_vals))
+    # Mutlak etki büyüklüğüne göre sırala ve en etkili ilk 4 özelliği al
+    katkilar.sort(key=lambda x: abs(x[2]), reverse=True)
 
     onceki = st.session_state.onceki_risk
     if onceki is not None and abs(risk_olasiligi - onceki) > 1e-6:
@@ -452,22 +490,11 @@ try:
         else:
             st.success(t["alert_low"].format(risk_olasiligi * 100, threshold * 100))
 
-        etkenler = []
-        if kavsak and not isik:
-            etkenler.append(t["shap_1"])
-        elif kavsak:
-            etkenler.append(t["shap_2"])
-        if altyapi == 0:
-            etkenler.append(t["shap_3"])
-        if saat >= 16:
-            etkenler.append(t["shap_4"])
-        if hafta_sonu == 1:
-            etkenler.append(t["shap_5"])
-
-        if etkenler:
-            st.markdown(t["shap_header"])
-            for madde in etkenler:
-                st.markdown(f"- {madde}")
+        st.markdown(t["shap_header"])
+        for sutun, deger, etki in katkilar[:4]:
+            etiket = t["feat_names"].get(sutun, sutun)
+            yon = f"🔺 {t['shap_up']}" if etki > 0 else f"🔽 {t['shap_down']}"
+            st.markdown(f"- **{etiket}** (`{deger}`): {yon} (`{etki:+.3f}` SHAP)")
 
 except Exception as e:
     st.error(f"Error / Hata: {e}")
