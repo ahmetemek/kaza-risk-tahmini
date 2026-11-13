@@ -152,7 +152,6 @@ if "secili_sehir" not in st.session_state:
 if "son_harita_tiklama" not in st.session_state:
     st.session_state.son_harita_tiklama = None
 
-# Üst Başlık ve Dil Butonu
 c_head, c_lang = st.columns([7, 1])
 with c_head:
     st.title(t["title"])
@@ -161,7 +160,6 @@ with c_lang:
     st.write("")
     st.button("🌍 TR / EN", on_click=toggle_lang, use_container_width=True)
 
-# --- YAN PANEL FİLTRELERİ ---
 with st.sidebar:
     st.header(t["filter_header"])
     tum_yillar = sorted(df["Yil"].unique())
@@ -178,7 +176,6 @@ with st.sidebar:
 if not secili_yillar:
     secili_yillar = tum_yillar
 
-# --- HARİTA ÜZERİ HIZLI YIL KAYDIRICISI (SLIDER) ---
 slider_secenekleri = [t["all_years"]] + sorted(secili_yillar)
 slider_secim = st.select_slider(
     t["slider_label"],
@@ -196,7 +193,6 @@ if df_filtered.empty:
     st.warning(t["no_data"])
     st.stop()
 
-# --- ÜST KPI METRİKLERİ ---
 k1, k2, k3 = st.columns(3)
 k1.metric(t["kpi_total"], f"{df_filtered['Kaza_Sayisi'].sum():,}")
 k2.metric(t["kpi_cities"], f"{df_filtered['Sehir_Eyalet'].nunique():,}")
@@ -205,7 +201,6 @@ k3.metric(t["kpi_sev"], f"{ort_siddet:.2f} / 4.00")
 
 st.divider()
 
-# --- HARİTA İÇİN ŞEHİR BAZLI GRUPLAMA ---
 df_map = (
     df_filtered.groupby(["Sehir_Eyalet", "City", "State"], as_index=False)
     .agg(
@@ -284,7 +279,6 @@ with col_sel2:
 
 st.divider()
 
-# --- ALT BÖLÜM: SEÇİLİ ŞEHİR DETAYI VEYA GENEL SIRALAMA ---
 if st.session_state.secili_sehir:
     hedef = st.session_state.secili_sehir
     sehir_df = df_filtered[df_filtered["Sehir_Eyalet"] == hedef].sort_values("Yil").copy()
@@ -362,10 +356,6 @@ else:
         color="Ort_Siddet",
         color_continuous_scale="YlOrRd",
         text_auto=True,
-        labels={"Toplam_Kaza": t["col_count"], "Sehir_Eyalet": "City / Şehir", "Ort_Siddet": t["col_sev"]},
-    )
-    fig_top.update_layout(yaxis={"categoryorder": "total ascending"}, height=480)
-    st.plotly_chart(fig_top, use_container_width=True)
         labels={"Toplam_Kaza": t["col_count"], "Sehir_Eyalet": "City / Şehir", "Ort_Siddet": t["col_sev"]},
     )
     fig_top.update_layout(yaxis={"categoryorder": "total ascending"}, height=480)
