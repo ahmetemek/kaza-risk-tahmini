@@ -24,6 +24,43 @@ EYALET_ISIMLERI = {
     "WI": "Wisconsin", "WY": "Wyoming"
 }
 
+HAVA_CEVIRI_TR = {
+    "Clear": "Açık",
+    "Fair": "Açık / Güneşli",
+    "Mostly Cloudy": "Çok Bulutlu",
+    "Partly Cloudy": "Parçalı Bulutlu",
+    "Cloudy": "Bulutlu",
+    "Overcast": "Kapalı",
+    "Light Rain": "Hafif Yağmurlu",
+    "Rain": "Yağmurlu",
+    "Heavy Rain": "Şiddetli Yağmurlu",
+    "Light Snow": "Hafif Karlı",
+    "Snow": "Karlı",
+    "Heavy Snow": "Yoğun Karlı",
+    "Fog": "Sisli",
+    "Haze": "Puslu",
+    "Mist": "Hafif Sisli",
+    "Thunderstorm": "Gök Gürültülü Fırtına",
+    "T-Storm": "Fırtınalı",
+    "Light Drizzle": "Hafif Çisenti",
+    "Drizzle": "Çisenti",
+    "Scattered Clouds": "Az Bulutlu",
+    "Smoke": "Dumanlı",
+    "Windy": "Rüzgarlı",
+    "Fair / Windy": "Açık / Rüzgarlı",
+    "Mostly Cloudy / Windy": "Çok Bulutlu / Rüzgarlı",
+    "Partly Cloudy / Windy": "Parçalı Bulutlu / Rüzgarlı",
+    "Cloudy / Windy": "Bulutlu / Rüzgarlı",
+    "Wintry Mix": "Karla Karışık Yağmur",
+    "Light Freezing Rain": "Hafif Dondurucu Yağmur",
+    "Bilinmiyor": "Bilinmiyor",
+}
+
+def hava_cevir(deger, dil):
+    if dil == "TR":
+        return HAVA_CEVIRI_TR.get(deger, deger)
+    return deger
+
 T = {
     "EN": {
         "title": "📊 Historical Accident Analytics & Regional Explorer",
@@ -73,7 +110,8 @@ T = {
     },
 }
 
-t = T[st.session_state.lang]
+lang = st.session_state.lang
+t = T[lang]
 
 @st.cache_data
 def load_vis_data():
@@ -152,7 +190,6 @@ df_map_display = df_map.head(1500).copy()
 st.subheader(t["map_title"])
 st.caption(t["map_hint"])
 
-# Eyalet filtresi seçildiyse haritayı otomatik o bölgeye odakla
 merkez_lat = df_map_display["Enlem"].mean() if secili_eyaletler else 38.5
 merkez_lon = df_map_display["Boylam"].mean() if secili_eyaletler else -96.0
 zoom_seviyesi = 5.2 if secili_eyaletler else 3.2
@@ -177,14 +214,12 @@ fig_map.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
 harita_secim = st.plotly_chart(fig_map, use_container_width=True, on_select="rerun", selection_mode="points")
 
-# Haritaya YENİ bir tıklama geldiyse yakala
 if harita_secim and harita_secim.get("selection") and harita_secim["selection"].get("points"):
     tiklanan = harita_secim["selection"]["points"][0].get("customdata", [None])[0]
     if tiklanan and tiklanan != st.session_state.son_harita_tiklama:
         st.session_state.son_harita_tiklama = tiklanan
         st.session_state.secili_sehir = tiklanan
 
-# Eğer seçili şehir mevcut filtrelerde yoksa sıfırla
 gecerli_sehirler = df_map["Sehir_Eyalet"].tolist()
 if st.session_state.secili_sehir not in gecerli_sehirler:
     st.session_state.secili_sehir = None
@@ -220,8 +255,9 @@ st.divider()
 # --- ALT BÖLÜM: SEÇİLİ ŞEHİR DETAYI VEYA GENEL SIRALAMA ---
 if st.session_state.secili_sehir:
     hedef = st.session_state.secili_sehir
-    # BURADA df_filtered KULLANILARAK SOL FİLTRELERİN GRAFİĞİ ETKİLEMESİ SAĞLANDI
-    sehir_df = df_filtered[df_filtered["Sehir_Eyalet"] == hedef].sort_values("Yil")
+    sehir_df = df_filtered[df_filtered["Sehir_Eyalet"] == hedef].sort_values("Yil").copy()
+    sehir_df["Hava_Ceviri"] = sehir_df["En_Sik_Hava_Durumu"].apply(lambda x: hava_cevir(x, lang))
+
     sehir_adi, eyalet_kodu = hedef.split(", ")
     eyalet_tam_ad = EYALET_ISIMLERI.get(eyalet_kodu, eyalet_kodu)
 
@@ -245,20 +281,21 @@ if st.session_state.secili_sehir:
 
     with c_right:
         hava_df = (
-            sehir_df.groupby("En_Sik_Hava_Durumu", as_index=False)["Kaza_Sayisi"]
+            sehir_df.groupby("Hava_Ceviri", as_index=False)["Kaza_Sayisi"]
             .sum()
             .sort_values("Kaza_Sayisi", ascending=False)
         )
         fig_pie = px.pie(
             hava_df,
-            names="En_Sik_Hava_Durumu",
+            names="Hava_Ceviri",
             values="Kaza_Sayisi",
             hole=0.45,
             title=t["chart_weather"].format(sehir_adi),
+            labels={"Hava_Ceviri": t["col_weather"], "Kaza_Sayisi": t["col_count"]},
         )
         st.plotly_chart(fig_pie, use_container_width=True)
 
-    gosterim_df = sehir_df[["Yil", "Kaza_Sayisi", "Ort_Siddet", "En_Sik_Hava_Durumu"]].copy()
+    gosterim_df = sehir_df[["Yil", "Kaza_Sayisi", "Ort_Siddet", "Hava_Ceviri"]].copy()
     gosterim_df["Ort_Siddet"] = gosterim_df["Ort_Siddet"].round(2)
     gosterim_df.columns = [t["col_year"], t["col_count"], t["col_sev"], t["col_weather"]]
     st.dataframe(gosterim_df, use_container_width=True, hide_index=True)
