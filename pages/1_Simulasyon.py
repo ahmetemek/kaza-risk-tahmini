@@ -498,3 +498,95 @@ try:
 
 except Exception as e:
     st.error(f"Error / Hata: {e}")
+
+# --- TOPLU TAHMİN MODÜLÜ (BATCH PREDICTION) ---
+st.divider()
+is_tr = st.session_state.get("lang", "EN") == "TR"
+
+st.subheader("📂 Toplu Risk Tahmini (CSV Dosyası ile Çoklu Senaryo Skorlama)" if is_tr else "📂 Batch Risk Prediction (Multi-Scenario CSV Scoring)")
+st.caption(
+    "Birden fazla konum ve hava durumu senaryosunu tek seferde skorlamak için örnek şablonu indirin, doldurun ve aşağıya yükleyin."
+    if is_tr else
+    "Download the sample CSV template, fill in multiple road/weather scenarios, and upload it below for bulk risk scoring."
+)
+
+try:
+    _art = joblib.load("kaza_risk_modeli.joblib")
+    _model = _art["model"] if isinstance(_art, dict) and "model" in _art else _art
+    _esik = _art.get("threshold", 0.6052) if isinstance(_art, dict) else 0.6052
+    _ozellikler = _art["features"] if isinstance(_art, dict) and "features" in _art else list(_model.feature_name_)
+
+    # Modelin beklediği sütunlara uygun 3 satırlık örnek şablon oluştur
+    ornek_veri = {}
+    for col in _ozellikler:
+        if "Lat" in col:
+            ornek_veri[col] = [42.3601, 34.0522, 25.7617]
+        elif "Lng" in col:
+            ornek_veri[col] = [-71.0589, -118.2437, -80.1918]
+        elif "Temp" in col:
+            ornek_veri[col] = [34.0, 72.0, 84.0]
+        elif "Humid" in col:
+            ornek_veri[col] = [85.0, 45.0, 78.0]
+        elif "Press" in col:
+            ornek_veri[col] = [29.8, 30.1, 29.9]
+        elif "Visib" in col:
+            ornek_veri[col] = [2.0, 10.0, 8.0]
+        elif "Wind" in col:
+            ornek_veri[col] = [18.0, 6.0, 12.0]
+        elif "Hour" in col:
+            ornek_veri[col] = [17, 11, 22]
+        elif "Month" in col:
+            ornek_veri[col] = [1, 6, 9]
+        else:
+            ornek_veri[col] = [1, 0, 1]
+
+    sablon_df = pd.DataFrame(ornek_veri)
+
+    st.download_button(
+        label="📥 Örnek Toplu Tahmin Şablonunu İndir (.csv)" if is_tr else "📥 Download Sample Batch Template (.csv)",
+        data=sablon_df.to_csv(index=False).encode("utf-8"),
+        file_name="ornek_toplu_tahmin_sablonu.csv",
+        mime="text/csv",
+    )
+
+    yuklenen_csv = st.file_uploader(
+        "Senaryo CSV Dosyanızı Yükleyin" if is_tr else "Upload Your Scenario CSV File",
+        type=["csv"],
+        key="batch_uploader",
+    )
+
+    if yuklenen_csv is not None:
+        batch_df = pd.read_csv(yuklenen_csv)
+        eksik_sutunlar = [c for c in _ozellikler if c not in batch_df.columns]
+
+        if eksik_sutunlar:
+            st.error(
+                f"Yüklenen dosyada şu sütunlar eksik: {', '.join(eksik_sutunlar)}"
+                if is_tr else
+                f"Missing required columns in uploaded CSV: {', '.join(eksik_sutunlar)}"
+            )
+        else:
+            X_batch = batch_df[_ozellikler].copy()
+            olasiliklar = _model.predict_proba(X_batch)[:, 1]
+            batch_df["Risk_Olasiligi (%)"] = (olasiliklar * 100).round(2)
+            batch_df["Tahmin_Sonucu"] = [
+                ("YÜKSEK RİSK" if is_tr else "HIGH RISK") if p >= _esik else ("DÜŞÜK RİSK" if is_tr else "LOW RISK")
+                for p in olasiliklar
+            ]
+
+            st.success(
+                f"{len(batch_df)} senaryo başarıyla skorlandı! (Eşik Değer: {_esik:.4f})"
+                if is_tr else
+                f"Successfully scored {len(batch_df)} scenarios! (Threshold: {_esik:.4f})"
+            )
+            st.dataframe(batch_df, use_container_width=True)
+
+            st.download_button(
+                label="💾 Skorlanmış Sonuçları İndir (.csv)" if is_tr else "💾 Download Scored Results (.csv)",
+                data=batch_df.to_csv(index=False).encode("utf-8"),
+                file_name="toplu_risk_tahmin_sonuclari.csv",
+                mime="text/csv",
+                use_container_width=True,
+            )
+except Exception as err:
+    st.info(f"Batch module standby: {err}")
