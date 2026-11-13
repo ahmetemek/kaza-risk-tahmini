@@ -121,7 +121,7 @@ df_map_display = df_map.head(1500).copy()
 st.subheader(t["map_title"])
 st.caption(t["map_hint"])
 
-fig_map = px.scatter_mapbox(
+fig_map = px.scatter_map(
     df_map_display,
     lat="Enlem",
     lon="Boylam",
@@ -134,7 +134,7 @@ fig_map = px.scatter_mapbox(
     size_max=32,
     zoom=3.2,
     center={"lat": 38.5, "lon": -96.0},
-    mapbox_style="carto-positron",
+    map_style="carto-positron",
     height=480,
 )
 fig_map.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
