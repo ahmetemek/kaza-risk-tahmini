@@ -53,13 +53,18 @@ HAVA_CEVIRI_TR = {
     "Cloudy / Windy": "Bulutlu / Rüzgarlı",
     "Wintry Mix": "Karla Karışık Yağmur",
     "Light Freezing Rain": "Hafif Dondurucu Yağmur",
+    "Blowing Dust": "Toz Fırtınası",
+    "Patches of Fog": "Yer Yer Sisli",
+    "Shallow Fog": "Alçak Sis",
+    "Light Sleet": "Hafif Sulu Kar",
     "Bilinmiyor": "Bilinmiyor",
+    "Other": "Diğer",
 }
 
 def hava_cevir(deger, dil):
     if dil == "TR":
         return HAVA_CEVIRI_TR.get(deger, deger)
-    return deger
+    return "Unknown" if deger == "Bilinmiyor" else deger
 
 T = {
     "EN": {
@@ -76,13 +81,14 @@ T = {
         "city_select_label": "Select / Search City Directly:",
         "city_detail_header": "🏙️ Detailed Regional Analysis: {} ({})",
         "chart_trend": "Yearly Accident Trend in {} (Selected Years)",
-        "chart_weather": "Top Weather Conditions in {}",
+        "chart_weather": "True Weather Distribution in {} (All Accidents)",
         "reset_city": "🔄 Back to Top 15 Cities",
         "top_cities_title": "🏆 Top 15 Cities by Accident Volume (Filtered)",
         "col_year": "Year",
         "col_count": "Accident Count",
         "col_sev": "Avg Severity",
-        "col_weather": "Dominant Weather",
+        "col_weather": "Dominant Weather (Yearly)",
+        "col_weather_all": "Weather Condition",
         "no_data": "No data matches the selected filters. Please adjust the sidebar filters.",
     },
     "TR": {
@@ -99,13 +105,14 @@ T = {
         "city_select_label": "Doğrudan Şehir Seçin / Arayın:",
         "city_detail_header": "🏙️ Detaylı Bölgesel İnceleme: {} ({})",
         "chart_trend": "{} - Yıllara Göre Kaza Değişimi (Seçili Yıllar)",
-        "chart_weather": "{} - Kazalarda En Sık Görülen Hava Koşulları",
+        "chart_weather": "{} - Tüm Kazaların Gerçek Hava Durumu Dağılımı",
         "reset_city": "🔄 Genel Bakışa Dön (İlk 15 Şehir)",
         "top_cities_title": "🏆 En Fazla Kaza Görülen İlk 15 Şehir (Filtreli)",
         "col_year": "Yıl",
         "col_count": "Kaza Sayısı",
         "col_sev": "Ort. Şiddet",
-        "col_weather": "Baskın Hava Durumu",
+        "col_weather": "Yılın Baskın Hava Durumu",
+        "col_weather_all": "Hava Durumu",
         "no_data": "Seçilen filtrelere uygun veri bulunamadı. Lütfen sol menüdeki seçimleri güncelleyin.",
     },
 }
@@ -119,11 +126,22 @@ def load_vis_data():
     df["Sehir_Eyalet"] = df["City"] + ", " + df["State"]
     return df
 
+@st.cache_data
+def load_weather_data():
+    try:
+        df_w = pd.read_csv("sehir_hava_verisi.csv")
+        df_w["Sehir_Eyalet"] = df_w["City"] + ", " + df_w["State"]
+        return df_w
+    except FileNotFoundError:
+        return None
+
 try:
     df = load_vis_data()
 except FileNotFoundError:
     st.error("`gorsellestirme_verisi.csv` not found in the repository root.")
     st.stop()
+
+df_weather_all = load_weather_data()
 
 if "secili_sehir" not in st.session_state:
     st.session_state.secili_sehir = None
@@ -280,18 +298,39 @@ if st.session_state.secili_sehir:
         st.plotly_chart(fig_trend, use_container_width=True)
 
     with c_right:
-        hava_df = (
-            sehir_df.groupby("Hava_Ceviri", as_index=False)["Kaza_Sayisi"]
-            .sum()
-            .sort_values("Kaza_Sayisi", ascending=False)
-        )
+        # Detaylı hava durumu dosyası yüklüyse tüm hava durumlarını gerçek oranlarıyla göster
+        if df_weather_all is not None:
+            w_sub = df_weather_all[
+                (df_weather_all["Sehir_Eyalet"] == hedef) & (df_weather_all["Yil"].isin(secili_yillar))
+            ]
+            hava_df = (
+                w_sub.groupby("Weather_Condition", as_index=False)["Kaza_Sayisi"]
+                .sum()
+                .sort_values("Kaza_Sayisi", ascending=False)
+            )
+            toplam_kaza_sehir = hava_df["Kaza_Sayisi"].sum()
+            if toplam_kaza_sehir > 0:
+                # %1.5 altındaki çok nadir hava durumlarını "Other" altında birleştir
+                hava_df["Oran"] = hava_df["Kaza_Sayisi"] / toplam_kaza_sehir
+                ana_hava = hava_df[hava_df["Oran"] >= 0.015].copy()
+                diger_toplam = hava_df[hava_df["Oran"] < 0.015]["Kaza_Sayisi"].sum()
+                if diger_toplam > 0:
+                    diger_satir = pd.DataFrame([{"Weather_Condition": "Other", "Kaza_Sayisi": diger_toplam, "Oran": 0}])
+                    ana_hava = pd.concat([ana_hava, diger_satir], ignore_index=True)
+                ana_hava["Hava_Ceviri"] = ana_hava["Weather_Condition"].apply(lambda x: hava_cevir(x, lang))
+                hava_plot_df = ana_hava
+            else:
+                hava_plot_df = sehir_df.groupby("Hava_Ceviri", as_index=False)["Kaza_Sayisi"].sum()
+        else:
+            hava_plot_df = sehir_df.groupby("Hava_Ceviri", as_index=False)["Kaza_Sayisi"].sum()
+
         fig_pie = px.pie(
-            hava_df,
+            hava_plot_df,
             names="Hava_Ceviri",
             values="Kaza_Sayisi",
             hole=0.45,
             title=t["chart_weather"].format(sehir_adi),
-            labels={"Hava_Ceviri": t["col_weather"], "Kaza_Sayisi": t["col_count"]},
+            labels={"Hava_Ceviri": t["col_weather_all"], "Kaza_Sayisi": t["col_count"]},
         )
         st.plotly_chart(fig_pie, use_container_width=True)
 
