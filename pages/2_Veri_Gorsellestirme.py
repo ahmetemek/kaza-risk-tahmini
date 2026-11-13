@@ -243,6 +243,43 @@ k1.metric(t["kpi_total"], f"{df_filtered['Kaza_Sayisi'].sum():,}")
 k2.metric(t["kpi_cities"], f"{df_filtered['Sehir_Eyalet'].nunique():,}")
 ort_siddet = (df_filtered["Ort_Siddet"] * df_filtered["Kaza_Sayisi"]).sum() / max(df_filtered["Kaza_Sayisi"].sum(), 1)
 k3.metric(t["kpi_sev"], f"{ort_siddet:.2f} / 4.00")
+# --- OTOMATİK ANALİZ RAPORU İNDİRME BUTONLARI ---
+rapor_hedef = st.session_state.secili_sehir if st.session_state.secili_sehir else (
+    ", ".join(secili_eyaletler) if secili_eyaletler else "All USA / Tüm ABD"
+)
+en_yogun_sehir = (
+    df_filtered.groupby("Sehir_Eyalet")["Kaza_Sayisi"].sum().idxmax()
+    if not df_filtered.empty else "-"
+)
+rapor_metni = f"""# Trafik Kazaları Analiz Raporu / Traffic Accident Analytics Report
+- **Analiz Kapsamı (Scope):** {rapor_hedef}
+- **Seçili Yıllar (Years):** {', '.join(map(str, aktif_yillar))}
+- **Toplam Kaza Sayısı (Total Accidents):** {df_filtered['Kaza_Sayisi'].sum():,}
+- **Etkilenen Şehir Sayısı (Active Cities):** {df_filtered['Sehir_Eyalet'].nunique():,}
+- **Ortalama Kaza Şiddeti (Avg. Severity):** {ort_siddet:.2f} / 4.00
+- **En Yoğun Şehir (Top Hotspot City):** {en_yogun_sehir}
+
+---
+*Generated automatically by Smart City Mobility Analytics Platform.*
+"""
+
+dl1, dl2 = st.columns(2)
+with dl1:
+    st.download_button(
+        label="📄 Yönetici Özeti Raporunu İndir (.md)" if lang == "TR" else "📄 Download Executive Summary Report (.md)",
+        data=rapor_metni.encode("utf-8"),
+        file_name="trafik_analiz_raporu.md",
+        mime="text/markdown",
+        use_container_width=True,
+    )
+with dl2:
+    st.download_button(
+        label="📊 Filtrelenmiş Veriyi İndir (.csv)" if lang == "TR" else "📊 Download Filtered Dataset (.csv)",
+        data=df_filtered.to_csv(index=False).encode("utf-8"),
+        file_name="filtrelenmis_kaza_verisi.csv",
+        mime="text/csv",
+        use_container_width=True,
+    )
 
 st.divider()
 
