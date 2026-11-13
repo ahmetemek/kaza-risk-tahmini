@@ -8,50 +8,68 @@ if "lang" not in st.session_state:
 def toggle_lang():
     st.session_state.lang = "TR" if st.session_state.lang == "EN" else "EN"
 
+EYALET_ISIMLERI = {
+    "AL": "Alabama", "AZ": "Arizona", "AR": "Arkansas", "CA": "California",
+    "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware", "DC": "District of Columbia",
+    "FL": "Florida", "GA": "Georgia", "ID": "Idaho", "IL": "Illinois",
+    "IN": "Indiana", "IA": "Iowa", "KS": "Kansas", "KY": "Kentucky",
+    "LA": "Louisiana", "ME": "Maine", "MD": "Maryland", "MA": "Massachusetts",
+    "MI": "Michigan", "MN": "Minnesota", "MS": "Mississippi", "MO": "Missouri",
+    "MT": "Montana", "NE": "Nebraska", "NV": "Nevada", "NH": "New Hampshire",
+    "NJ": "New Jersey", "NM": "New Mexico", "NY": "New York", "NC": "North Carolina",
+    "ND": "North Dakota", "OH": "Ohio", "OK": "Oklahoma", "OR": "Oregon",
+    "PA": "Pennsylvania", "RI": "Rhode Island", "SC": "South Carolina",
+    "SD": "South Dakota", "TN": "Tennessee", "TX": "Texas", "UT": "Utah",
+    "VT": "Vermont", "VA": "Virginia", "WA": "Washington", "WV": "West Virginia",
+    "WI": "Wisconsin", "WY": "Wyoming"
+}
+
 T = {
     "EN": {
         "title": "📊 Historical Accident Analytics & Regional Explorer",
-        "subtitle": "Filter accidents by year and click on any city on the map (e.g., Boston) for detailed trend analysis.",
+        "subtitle": "Filter accidents by year/state on the left and click any city on the map (e.g., Boston) for detailed trend analysis.",
         "filter_header": "🔎 Data Filters",
         "year_select": "Select Year(s)",
-        "state_select": "Select State(s) (Leave empty for All USA)",
+        "state_select": "Select State(s) (Empty = All USA)",
         "kpi_total": "Total Accidents (Filtered)",
         "kpi_cities": "Active Cities",
         "kpi_sev": "Avg. Accident Severity",
         "map_title": "🗺️ Interactive Accident Density Map (Click a City Bubble to Inspect)",
-        "map_hint": "💡 Tip: Click directly on a city circle (like Boston, MA) on the map or pick from the dropdown below to view city-level details.",
-        "city_select_label": "Or Select/Search City Directly:",
-        "city_detail_header": "🏙️ Detailed Regional Analysis: {}, {}",
-        "chart_trend": "Yearly Accident Trend in {}",
-        "chart_weather": "Top Weather Conditions During Accidents in {}",
-        "reset_city": "🔄 Show Top 15 Cities Overview",
-        "top_cities_title": "🏆 Top 15 Cities by Accident Volume (Selected Period)",
+        "map_hint": "💡 Tip: Click a city circle (e.g., Boston, MA) on the map OR select from the dropdown below.",
+        "city_select_label": "Select / Search City Directly:",
+        "city_detail_header": "🏙️ Detailed Regional Analysis: {} ({})",
+        "chart_trend": "Yearly Accident Trend in {} (Selected Years)",
+        "chart_weather": "Top Weather Conditions in {}",
+        "reset_city": "🔄 Back to Top 15 Cities",
+        "top_cities_title": "🏆 Top 15 Cities by Accident Volume (Filtered)",
         "col_year": "Year",
         "col_count": "Accident Count",
         "col_sev": "Avg Severity",
         "col_weather": "Dominant Weather",
+        "no_data": "No data matches the selected filters. Please adjust the sidebar filters.",
     },
     "TR": {
         "title": "📊 Geçmiş Kaza Analizi ve Bölgesel Veri Keşfi",
-        "subtitle": "Verileri yıllara göre filtreleyin ve detaylı trend analizi için haritadan bir şehre (Örn: Boston) tıklayın.",
+        "subtitle": "Sol menüden yıl/eyalet filtreleyin ve detaylı analiz için haritadan bir şehre (Örn: Boston) tıklayın.",
         "filter_header": "🔎 Veri Filtreleri",
         "year_select": "Yıl Seçimi",
-        "state_select": "Eyalet Seçimi (Tüm ABD için boş bırakın)",
-        "kpi_total": "Toplam Kaza Sayısı",
+        "state_select": "Eyalet Seçimi (Boş = Tüm ABD)",
+        "kpi_total": "Toplam Kaza Sayısı (Filtreli)",
         "kpi_cities": "Etkilenen Şehir Sayısı",
         "kpi_sev": "Ortalama Kaza Şiddeti",
         "map_title": "🗺️ Etkileşimli Kaza Yoğunluk Haritası (İncelemek İçin Bir Şehre Tıklayın)",
-        "map_hint": "💡 İpucu: Detaylı şehir analizi için haritadaki şehir noktalarına (örneğin Boston) doğrudan tıklayın veya aşağıdaki listeden seçin.",
-        "city_select_label": "Veya Doğrudan Şehir Seçin / Arayın:",
-        "city_detail_header": "🏙️ Detaylı Bölgesel İnceleme: {}, {}",
-        "chart_trend": "{} - Yıllara Göre Kaza Değişimi",
+        "map_hint": "💡 İpucu: Haritadaki şehir noktalarına (örneğin Boston, MA) doğrudan tıklayın VEYA aşağıdaki listeden seçin.",
+        "city_select_label": "Doğrudan Şehir Seçin / Arayın:",
+        "city_detail_header": "🏙️ Detaylı Bölgesel İnceleme: {} ({})",
+        "chart_trend": "{} - Yıllara Göre Kaza Değişimi (Seçili Yıllar)",
         "chart_weather": "{} - Kazalarda En Sık Görülen Hava Koşulları",
-        "reset_city": "🔄 Genel Bakışa Dön (En Yoğun 15 Şehir)",
-        "top_cities_title": "🏆 En Fazla Kaza Görülen İlk 15 Şehir (Seçili Dönem)",
+        "reset_city": "🔄 Genel Bakışa Dön (İlk 15 Şehir)",
+        "top_cities_title": "🏆 En Fazla Kaza Görülen İlk 15 Şehir (Filtreli)",
         "col_year": "Yıl",
         "col_count": "Kaza Sayısı",
         "col_sev": "Ort. Şiddet",
         "col_weather": "Baskın Hava Durumu",
+        "no_data": "Seçilen filtrelere uygun veri bulunamadı. Lütfen sol menüdeki seçimleri güncelleyin.",
     },
 }
 
@@ -69,6 +87,11 @@ except FileNotFoundError:
     st.error("`gorsellestirme_verisi.csv` not found in the repository root.")
     st.stop()
 
+if "secili_sehir" not in st.session_state:
+    st.session_state.secili_sehir = None
+if "son_harita_tiklama" not in st.session_state:
+    st.session_state.son_harita_tiklama = None
+
 # Üst Başlık ve Dil Butonu
 c_head, c_lang = st.columns([7, 1])
 with c_head:
@@ -85,7 +108,12 @@ with st.sidebar:
     secili_yillar = st.multiselect(t["year_select"], options=tum_yillar, default=tum_yillar)
 
     tum_eyaletler = sorted(df["State"].unique())
-    secili_eyaletler = st.multiselect(t["state_select"], options=tum_eyaletler, default=[])
+    secili_eyaletler = st.multiselect(
+        t["state_select"],
+        options=tum_eyaletler,
+        default=[],
+        format_func=lambda code: f"{code} - {EYALET_ISIMLERI.get(code, code)}",
+    )
 
 if not secili_yillar:
     secili_yillar = tum_yillar
@@ -93,6 +121,10 @@ if not secili_yillar:
 df_filtered = df[df["Yil"].isin(secili_yillar)]
 if secili_eyaletler:
     df_filtered = df_filtered[df_filtered["State"].isin(secili_eyaletler)]
+
+if df_filtered.empty:
+    st.warning(t["no_data"])
+    st.stop()
 
 # --- ÜST KPI METRİKLERİ ---
 k1, k2, k3 = st.columns(3)
@@ -115,11 +147,15 @@ df_map = (
     .sort_values("Toplam_Kaza", ascending=False)
 )
 
-# Performans için haritada en yoğun 1500 şehri göster (Boston, LA, NY vb. hepsi dahildir)
 df_map_display = df_map.head(1500).copy()
 
 st.subheader(t["map_title"])
 st.caption(t["map_hint"])
+
+# Eyalet filtresi seçildiyse haritayı otomatik o bölgeye odakla
+merkez_lat = df_map_display["Enlem"].mean() if secili_eyaletler else 38.5
+merkez_lon = df_map_display["Boylam"].mean() if secili_eyaletler else -96.0
+zoom_seviyesi = 5.2 if secili_eyaletler else 3.2
 
 fig_map = px.scatter_map(
     df_map_display,
@@ -132,51 +168,64 @@ fig_map = px.scatter_map(
     custom_data=["Sehir_Eyalet"],
     color_continuous_scale="YlOrRd",
     size_max=32,
-    zoom=3.2,
-    center={"lat": 38.5, "lon": -96.0},
+    zoom=zoom_seviyesi,
+    center={"lat": merkez_lat, "lon": merkez_lon},
     map_style="carto-positron",
-    height=480,
+    height=460,
 )
 fig_map.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
-# Haritaya tıklama (Selection) yakalama
 harita_secim = st.plotly_chart(fig_map, use_container_width=True, on_select="rerun", selection_mode="points")
 
-if "secili_sehir" not in st.session_state:
+# Haritaya YENİ bir tıklama geldiyse yakala
+if harita_secim and harita_secim.get("selection") and harita_secim["selection"].get("points"):
+    tiklanan = harita_secim["selection"]["points"][0].get("customdata", [None])[0]
+    if tiklanan and tiklanan != st.session_state.son_harita_tiklama:
+        st.session_state.son_harita_tiklama = tiklanan
+        st.session_state.secili_sehir = tiklanan
+
+# Eğer seçili şehir mevcut filtrelerde yoksa sıfırla
+gecerli_sehirler = df_map["Sehir_Eyalet"].tolist()
+if st.session_state.secili_sehir not in gecerli_sehirler:
     st.session_state.secili_sehir = None
 
-# Haritadan tıklandıysa yakala
-if harita_secim and harita_secim.get("selection") and harita_secim["selection"].get("points"):
-    tiklanan_nokta = harita_secim["selection"]["points"][0]
-    if "customdata" in tiklanan_nokta:
-        st.session_state.secili_sehir = tiklanan_nokta["customdata"][0]
+def liste_degisti():
+    secim = st.session_state.sehir_dropdown
+    st.session_state.secili_sehir = None if secim == "---" else secim
 
-# Manuel şehir arama / seçme kutusu (Varsayılan olarak Boston kolayca bulunabilir)
-sehir_listesi = ["---"] + df_map["Sehir_Eyalet"].tolist()
-varsayilan_index = sehir_listesi.index(st.session_state.secili_sehir) if st.session_state.secili_sehir in sehir_listesi else 0
+def sehir_sifirla():
+    st.session_state.secili_sehir = None
+    st.session_state.son_harita_tiklama = None
+
+sehir_listesi = ["---"] + gecerli_sehirler
+aktif_index = sehir_listesi.index(st.session_state.secili_sehir) if st.session_state.secili_sehir in sehir_listesi else 0
 
 col_sel1, col_sel2 = st.columns([3, 1])
 with col_sel1:
-    manuel_secim = st.selectbox(t["city_select_label"], options=sehir_listesi, index=varsayilan_index)
-    if manuel_secim != "---":
-        st.session_state.secili_sehir = manuel_secim
+    st.selectbox(
+        t["city_select_label"],
+        options=sehir_listesi,
+        index=aktif_index,
+        key="sehir_dropdown",
+        on_change=liste_degisti,
+    )
 with col_sel2:
     st.write("")
     st.write("")
     if st.session_state.secili_sehir:
-        if st.button(t["reset_city"], use_container_width=True):
-            st.session_state.secili_sehir = None
-            st.rerun()
+        st.button(t["reset_city"], on_click=sehir_sifirla, use_container_width=True)
 
 st.divider()
 
 # --- ALT BÖLÜM: SEÇİLİ ŞEHİR DETAYI VEYA GENEL SIRALAMA ---
-if st.session_state.secili_sehir and st.session_state.secili_sehir in df["Sehir_Eyalet"].values:
+if st.session_state.secili_sehir:
     hedef = st.session_state.secili_sehir
-    sehir_df = df[df["Sehir_Eyalet"] == hedef].sort_values("Yil")
-    sehir_adi, eyalet_adi = hedef.split(", ")
+    # BURADA df_filtered KULLANILARAK SOL FİLTRELERİN GRAFİĞİ ETKİLEMESİ SAĞLANDI
+    sehir_df = df_filtered[df_filtered["Sehir_Eyalet"] == hedef].sort_values("Yil")
+    sehir_adi, eyalet_kodu = hedef.split(", ")
+    eyalet_tam_ad = EYALET_ISIMLERI.get(eyalet_kodu, eyalet_kodu)
 
-    st.subheader(t["city_detail_header"].format(sehir_adi, eyalet_adi))
+    st.subheader(t["city_detail_header"].format(sehir_adi, f"{eyalet_tam_ad} - {eyalet_kodu}"))
 
     c_left, c_right = st.columns(2)
 
@@ -209,7 +258,6 @@ if st.session_state.secili_sehir and st.session_state.secili_sehir in df["Sehir_
         )
         st.plotly_chart(fig_pie, use_container_width=True)
 
-    # Yıllık Detay Tablosu
     gosterim_df = sehir_df[["Yil", "Kaza_Sayisi", "Ort_Siddet", "En_Sik_Hava_Durumu"]].copy()
     gosterim_df["Ort_Siddet"] = gosterim_df["Ort_Siddet"].round(2)
     gosterim_df.columns = [t["col_year"], t["col_count"], t["col_sev"], t["col_weather"]]
@@ -220,12 +268,13 @@ else:
     top15 = df_map.head(15)
     fig_top = px.bar(
         top15,
-        x="Kaza_Sayisi" if "Kaza_Sayisi" in top15 else "Toplam_Kaza",
+        x="Toplam_Kaza",
         y="Sehir_Eyalet",
         orientation="h",
         color="Ort_Siddet",
         color_continuous_scale="YlOrRd",
         text_auto=True,
+        labels={"Toplam_Kaza": t["col_count"], "Sehir_Eyalet": "City / Şehir", "Ort_Siddet": t["col_sev"]},
     )
     fig_top.update_layout(yaxis={"categoryorder": "total ascending"}, height=480)
     st.plotly_chart(fig_top, use_container_width=True)
