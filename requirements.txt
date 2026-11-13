@@ -7,3 +7,4 @@ xgboost
 folium
 streamlit-folium
 shap
+plotly
