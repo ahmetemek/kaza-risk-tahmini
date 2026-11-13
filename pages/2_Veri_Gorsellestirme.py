@@ -69,19 +69,21 @@ def hava_cevir(deger, dil):
 T = {
     "EN": {
         "title": "📊 Historical Accident Analytics & Regional Explorer",
-        "subtitle": "Filter accidents by year/state on the left and click any city on the map (e.g., Boston) for detailed trend analysis.",
+        "subtitle": "Slide through years above the map or click any city bubble (e.g., Boston) for detailed trend analysis.",
         "filter_header": "🔎 Data Filters",
-        "year_select": "Select Year(s)",
+        "year_select": "Select Year(s) (Sidebar)",
         "state_select": "Select State(s) (Empty = All USA)",
+        "slider_label": "🎞️ Quick Year Slider (Slide to switch years on the map)",
+        "all_years": "All Selected Years",
         "kpi_total": "Total Accidents (Filtered)",
         "kpi_cities": "Active Cities",
         "kpi_sev": "Avg. Accident Severity",
         "map_title": "🗺️ Interactive Accident Density Map (Click a City Bubble to Inspect)",
-        "map_hint": "💡 Tip: Click a city circle (e.g., Boston, MA) on the map OR select from the dropdown below.",
+        "map_hint": "💡 Tip: Use the slider above to switch years dynamically, or click a city circle (e.g., Boston, MA) to inspect details.",
         "city_select_label": "Select / Search City Directly:",
         "city_detail_header": "🏙️ Detailed Regional Analysis: {} ({})",
         "chart_trend": "Yearly Accident Trend in {} (Selected Years)",
-        "chart_weather": "True Weather Distribution in {} (All Accidents)",
+        "chart_weather": "True Weather Distribution in {}",
         "reset_city": "🔄 Back to Top 15 Cities",
         "top_cities_title": "🏆 Top 15 Cities by Accident Volume (Filtered)",
         "col_year": "Year",
@@ -93,19 +95,21 @@ T = {
     },
     "TR": {
         "title": "📊 Geçmiş Kaza Analizi ve Bölgesel Veri Keşfi",
-        "subtitle": "Sol menüden yıl/eyalet filtreleyin ve detaylı analiz için haritadan bir şehre (Örn: Boston) tıklayın.",
+        "subtitle": "Harita üzerindeki kaydırıcı ile yıllar arasında geçiş yapın veya detaylı analiz için bir şehre (Örn: Boston) tıklayın.",
         "filter_header": "🔎 Veri Filtreleri",
-        "year_select": "Yıl Seçimi",
+        "year_select": "Yıl Seçimi (Yan Menü)",
         "state_select": "Eyalet Seçimi (Boş = Tüm ABD)",
+        "slider_label": "🎞️ Hızlı Yıl Kaydırıcısı (Haritada yıllar arası geçiş için kaydırın)",
+        "all_years": "Seçili Tüm Yıllar",
         "kpi_total": "Toplam Kaza Sayısı (Filtreli)",
         "kpi_cities": "Etkilenen Şehir Sayısı",
         "kpi_sev": "Ortalama Kaza Şiddeti",
         "map_title": "🗺️ Etkileşimli Kaza Yoğunluk Haritası (İncelemek İçin Bir Şehre Tıklayın)",
-        "map_hint": "💡 İpucu: Haritadaki şehir noktalarına (örneğin Boston, MA) doğrudan tıklayın VEYA aşağıdaki listeden seçin.",
+        "map_hint": "💡 İpucu: Yıllar arasında geçiş için üstteki kaydırıcıyı kullanın veya haritadaki bir şehre (Örn: Boston, MA) tıklayın.",
         "city_select_label": "Doğrudan Şehir Seçin / Arayın:",
         "city_detail_header": "🏙️ Detaylı Bölgesel İnceleme: {} ({})",
-        "chart_trend": "{} - Yıllara Göre Kaza Değişimi (Seçili Yıllar)",
-        "chart_weather": "{} - Tüm Kazaların Gerçek Hava Durumu Dağılımı",
+        "chart_trend": "{} - Yıllara Göre Kaza Değişimi",
+        "chart_weather": "{} - Kazaların Gerçek Hava Durumu Dağılımı",
         "reset_city": "🔄 Genel Bakışa Dön (İlk 15 Şehir)",
         "top_cities_title": "🏆 En Fazla Kaza Görülen İlk 15 Şehir (Filtreli)",
         "col_year": "Yıl",
@@ -174,7 +178,17 @@ with st.sidebar:
 if not secili_yillar:
     secili_yillar = tum_yillar
 
-df_filtered = df[df["Yil"].isin(secili_yillar)]
+# --- HARİTA ÜZERİ HIZLI YIL KAYDIRICISI (SLIDER) ---
+slider_secenekleri = [t["all_years"]] + sorted(secili_yillar)
+slider_secim = st.select_slider(
+    t["slider_label"],
+    options=slider_secenekleri,
+    value=t["all_years"],
+)
+
+aktif_yillar = secili_yillar if slider_secim == t["all_years"] else [slider_secim]
+
+df_filtered = df[df["Yil"].isin(aktif_yillar)]
 if secili_eyaletler:
     df_filtered = df_filtered[df_filtered["State"].isin(secili_eyaletler)]
 
@@ -298,10 +312,9 @@ if st.session_state.secili_sehir:
         st.plotly_chart(fig_trend, use_container_width=True)
 
     with c_right:
-        # Detaylı hava durumu dosyası yüklüyse tüm hava durumlarını gerçek oranlarıyla göster
         if df_weather_all is not None:
             w_sub = df_weather_all[
-                (df_weather_all["Sehir_Eyalet"] == hedef) & (df_weather_all["Yil"].isin(secili_yillar))
+                (df_weather_all["Sehir_Eyalet"] == hedef) & (df_weather_all["Yil"].isin(aktif_yillar))
             ]
             hava_df = (
                 w_sub.groupby("Weather_Condition", as_index=False)["Kaza_Sayisi"]
@@ -310,7 +323,6 @@ if st.session_state.secili_sehir:
             )
             toplam_kaza_sehir = hava_df["Kaza_Sayisi"].sum()
             if toplam_kaza_sehir > 0:
-                # %1.5 altındaki çok nadir hava durumlarını "Other" altında birleştir
                 hava_df["Oran"] = hava_df["Kaza_Sayisi"] / toplam_kaza_sehir
                 ana_hava = hava_df[hava_df["Oran"] >= 0.015].copy()
                 diger_toplam = hava_df[hava_df["Oran"] < 0.015]["Kaza_Sayisi"].sum()
@@ -350,6 +362,10 @@ else:
         color="Ort_Siddet",
         color_continuous_scale="YlOrRd",
         text_auto=True,
+        labels={"Toplam_Kaza": t["col_count"], "Sehir_Eyalet": "City / Şehir", "Ort_Siddet": t["col_sev"]},
+    )
+    fig_top.update_layout(yaxis={"categoryorder": "total ascending"}, height=480)
+    st.plotly_chart(fig_top, use_container_width=True)
         labels={"Toplam_Kaza": t["col_count"], "Sehir_Eyalet": "City / Şehir", "Ort_Siddet": t["col_sev"]},
     )
     fig_top.update_layout(yaxis={"categoryorder": "total ascending"}, height=480)
