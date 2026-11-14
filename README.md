@@ -34,43 +34,4 @@ Bu proje, ABD genelinde 49 eyaleti kapsayan **~7.72 milyon trafik kazası kaydı
    * **Şehir Kıyaslama ve Gün/Saat Isı Haritası:** İki farklı şehri yıllık kaza hacmi ve ortalama şiddet bazında karşılaştırma; 7×24 haftalık yoğunluk matrisi.
    * **Otomatik Analiz Raporu İndirme:** Seçili eyalet, yıl veya şehre özel Yönetici Özeti Raporunu (`.md`) ve filtrelenmiş veri setini (`.csv`) tek tıkla indirme.
 3. **📈 Model Performansı ve Metodoloji (`pages/3_Model_Metodolojisi.py`)**
-   * Etkileşimli karar eşiği (threshold) simülatörü, eğitilmiş modelden canlı öznitelik önem sıralaması ve 2020 sonrası veri toplama yanlılığı (collection bias) incelemesi.
-
-### 📊 Keşifsel Veri Analizi (EDA) ve Mekansal Bulgular
-
-| Keşifsel Dağılımlar (Şiddet, Saat, Gün, Hava Durumu) | Korelasyon Matrisi (~7.7 Milyon Kayıt) |
-| :---: | :---: |
-| ![Keşifsel Dağılımlar](assets/eda_dagilimlar.png)[cite: 1] | ![Korelasyon Matrisi](assets/correlation_matrix.png)[cite: 7] |
-
-| Tüm ABD Mekansal Yoğunluk Haritası | Kaza Şiddetine Göre Mekansal Kümeleme |
-| :---: | :---: |
-| ![ABD Yoğunluk Haritası](assets/usa_spatial_density.jpg)[cite: 8] | ![Şiddet Kümeleme](assets/severity_clustering.jpg)[cite: 9] |
-
-* **Zirve Saatler ve İş Günleri:** Kazalar hafta içi sabah (07:00–08:00) ve akşam (16:00–17:00) işe gidiş-dönüş saatlerinde zirve yaparken hafta sonları belirgin şekilde düşmektedir.
-* **Hava Durumu Bulgusu:** Toplam kaza sayısının %70'inden fazlası açık ve görüş mesafesinin yüksek olduğu havalarda (yüksek trafik hacmi ve hız nedeniyle) gerçekleşirken; sis, yağış ve düşük görüş mesafesi kazanın şiddetini (Severity 3–4) yukarı çekmektedir.
-
-### 🤖 Makine Öğrenmesi Hattı ve Model Karşılaştırması
-
-* **Veri Sızıntısının Önlenmesi:** Kaza gerçekleştikten sonra oluşan değişkenler (`End_Time`, `End_Lat`, `End_Lng`, `Description` ve kaza sonrası etki mesafesi `Etki_Mesafesi_Mil`) canlı tahmin modelinden çıkarılarak modelin yalnızca **kaza öncesi (pre-crash) 14 öznitelik** ile çalışması sağlanmıştır[cite: 2, 7].
-
-| Gini Öznitelik Önemi | SHAP Özellik Etki Analizi (Açıklanabilir Yapay Zeka) |
-| :---: | :---: |
-| ![Öznitelik Seçimi](assets/feature_selection.png)[cite: 2] | ![SHAP Analizi](assets/shap_summary.png)[cite: 6] |
-
-| Model | ROC-AUC Skoru | Değerlendirme |
-| :--- | :---: | :--- |
-| **Logistic Regression (Taban Model)** | `0.6386`[cite: 4] | Doğrusal taban model; ağır kazalarda yüksek yanlış pozitif oranı[cite: 3, 4]. |
-| **Random Forest** | `0.8330`[cite: 4] | Doğrusal olmayan ilişkileri yakalar ancak bellek ve çıkarım maliyeti yüksektir[cite: 3, 4]. |
-| **LightGBM (Canlı Model)** | **`0.8814`** *(14 kaza-öncesi özellik: `0.8379`)*[cite: 4] | En yüksek ayırt edicilik ve hız; F1 eşik optimizasyonu (`0.6052` – `0.6423`) ile dengelenmiştir[cite: 4, 5]. |
-
-| ROC Eğrisi Karşılaştırması | Karmaşıklık Matrisleri | Optimal Karar Eşiği (Threshold) Analizi |
-| :---: | :---: | :---: |
-| ![ROC Eğrisi](assets/roc_curve.png)[cite: 4] | ![Karmaşıklık Matrisleri](assets/confusion_matrices.png)[cite: 3] | ![Eşik Optimizasyonu](assets/threshold_optimization.png)[cite: 5] |
-
-### ⚙️ Kurulum ve Çalıştırma
-
-```bash
-git clone [https://github.com/ahmetemek/kaza-risk-tahmini.git](https://github.com/ahmetemek/kaza-risk-tahmini.git)
-cd kaza-risk-tahmini
-pip install -r requirements.txt
-streamlit run app.py
+   * Etkileşimli karar eşiği (threshold) simülatörü, eğitilmiş modelden canlı öznitelik önem sıralaması ve 2020 sonrası veri toplama
