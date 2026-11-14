@@ -1,7 +1,7 @@
 <div align="center">
 
-# 🚦 Smart City Mobility: Pre-Crash Traffic Risk Prediction & Historical Analytics
-### Akıllı Şehir Ulaşımı: Kaza Öncesi Risk Tahmini ve Tarihsel Trafik Analizi
+# 🚦 Akıllı Şehir Ulaşımı: Kaza Öncesi Risk Tahmini ve Tarihsel Trafik Analizi
+### Smart City Mobility: Pre-Crash Traffic Risk Prediction & Historical Analytics
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://kaza-risk-tahmini-ajrghdxwg6dqjmmaitdygr.streamlit.app/)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
@@ -9,85 +9,70 @@
 [![SHAP](https://img.shields.io/badge/Explainable%20AI-SHAP-FF4B4B)](https://shap.readthedocs.io/)
 [![Plotly](https://img.shields.io/badge/Visuals-Plotly%206.0%2B-3F4F75?logo=plotly&logoColor=white)](https://plotly.com/)
 
-**[🚀 Live Demo / Canlı Uygulama](https://kaza-risk-tahmini-ajrghdxwg6dqjmmaitdygr.streamlit.app/) • [🇬🇧 English](#-english-documentation) • [🇹🇷 Türkçe](#-türkçe-dokümantasyon)**
+**[🚀 Canlı Uygulama / Live Demo](https://kaza-risk-tahmini-ajrghdxwg6dqjmmaitdygr.streamlit.app/) • [🇹🇷 Türkçe](#tr) • [🇬🇧 English](#en)**
 
 </div>
 
 ---
 
-## 🇬🇧 English Documentation
+<a id="tr"></a>
 
-### 📌 Project Overview
-This project is an end-to-end **Data Mining & Decision Support Platform** built on **~7.72 million traffic accident records** across 49 US states (2016–2023). The system combines a leak-free **LightGBM** pre-crash severity risk classifier with **SHAP (Explainable AI)** and an interactive multi-page **Streamlit** analytics dashboard capable of sub-second regional queries, batch CSV risk scoring, and automated executive report generation.
+## 🇹🇷 Türkçe Dokümantasyon
 
-* **Live Application:** [kaza-risk-tahmini.streamlit.app](https://kaza-risk-tahmini-ajrghdxwg6dqjmmaitdygr.streamlit.app/)
-* **Source Dataset:** [US Accidents (2016 - 2023) — Kaggle (Sobhan Moosavi)](https://www.kaggle.com/datasets/sobhanmoosavi/us-accidents)
+### 📌 Proje Özeti
+Bu proje, ABD genelinde 49 eyaleti kapsayan **~7.72 milyon trafik kazası kaydı** (2016–2023) üzerinde geliştirilmiş uçtan uca bir **Veri Madenciliği ve Karar Destek Platformudur**. Sistem; veri sızıntısından (data leakage) arındırılmış **LightGBM** kaza öncesi risk sınıflandırıcısını, **SHAP (Açıklanabilir Yapay Zeka)** analizini ve çok sayfalı etkileşimli **Streamlit** görselleştirme panelini tek çatı altında birleştirir.
 
----
+* **Canlı Uygulama:** [kaza-risk-tahmini.streamlit.app](https://kaza-risk-tahmini-ajrghdxwg6dqjmmaitdygr.streamlit.app/)
+* **Veri Seti Kaynağı:** [US Accidents (2016 - 2023) — Kaggle (Sobhan Moosavi)](https://www.kaggle.com/datasets/sobhanmoosavi/us-accidents)
 
-### 🏗️ System Architecture & Key Modules
-To ensure cloud deployment speed without sacrificing analytical depth, the 7.72M-row raw dataset was engineered into lightweight pre-aggregated relational slices (`gorsellestirme_verisi.csv`, `sehir_hava_verisi.csv`, `zaman_yogunluk_verisi.csv`):
+### 🏗️ Sistem Mimarisi ve Temel Modüller
+7.72 milyon satırlık ham veri setinin bulut ortamında milisaniyeler içinde sorgulanabilmesi için veri mühendisliği aşamasında ön-toplulaştırılmış (pre-aggregated) katmanlar (`gorsellestirme_verisi.csv`, `sehir_hava_verisi.csv`, `zaman_yogunluk_verisi.csv`) oluşturulmuştur:
 
-1. **🔮 Risk Simulation & Batch Prediction (`pages/1_Simulasyon.py`)**
-   * **Single-Scenario Simulator:** Interactive map & parameter controls (coordinates, weather metrics, road infrastructure flags, rush-hour indicators) with real-time **SHAP waterfall/force impact breakdown**.
-   * **Batch CSV Scoring Engine:** Upload multi-row road/weather CSV files (with downloadable template) to score hundreds of scenarios in bulk and export risk classifications.
-2. **📊 Historical Analytics & Regional Explorer (`pages/2_Veri_Gorsellestirme.py`)**
-   * **Dynamic Year Slider & Interactive Map:** Powered by `px.scatter_map` with click-to-inspect city selection across 1,500+ hotspots.
-   * **Head-to-Head City Comparison & Rush-Hour Heatmaps:** Compare any two US cities across volume and severity trends, or inspect 7×24 day/hour accident density matrices.
-   * **One-Click Executive Reports:** Export filtered regional summaries (`.md`) and subsets (`.csv`).
-3. **📈 Model Performance & Methodology (`pages/3_Model_Metodolojisi.py`)**
-   * Interactive decision-threshold sensitivity simulator, live LightGBM feature importance inspection, and analytical notes on post-2020 sensor collection bias.
+1. **🔮 Risk Simülasyonu ve Toplu Tahmin (`pages/1_Simulasyon.py`)**
+   * **Tekil Senaryo Simülatörü:** Harita üzerinden konum seçimi, hava durumu parametreleri, yol altyapı işaretleri (kavşak, trafik ışığı, yaya geçidi) ve zaman dilimi ayarlarıyla anlık risk olasılığı ve canlı **SHAP etki grafiği**.
+   * **Toplu CSV Tahmin Motoru:** Çok sayıda yol/hava senaryosu içeren CSV dosyalarını (örnek şablon indirme desteğiyle) tek seferde skorlama ve sonuçları indirme imkanı.
+2. **📊 Geçmiş Kaza Analizi ve Bölgesel Veri Keşfi (`pages/2_Veri_Gorsellestirme.py`)**
+   * **Yıl Kaydırıcısı ve Etkileşimli Harita:** `px.scatter_map` altyapısı ile 1.500'den fazla kaza odağını harita üzerinden tıklayarak inceleme.
+   * **Şehir Kıyaslama ve Gün/Saat Isı Haritası:** İki farklı şehri yıllık kaza hacmi ve ortalama şiddet bazında karşılaştırma; 7×24 haftalık yoğunluk matrisi.
+   * **Otomatik Analiz Raporu İndirme:** Seçili eyalet, yıl veya şehre özel Yönetici Özeti Raporunu (`.md`) ve filtrelenmiş veri setini (`.csv`) tek tıkla indirme.
+3. **📈 Model Performansı ve Metodoloji (`pages/3_Model_Metodolojisi.py`)**
+   * Etkileşimli karar eşiği (threshold) simülatörü, eğitilmiş modelden canlı öznitelik önem sıralaması ve 2020 sonrası veri toplama yanlılığı (collection bias) incelemesi.
 
----
+### 📊 Keşifsel Veri Analizi (EDA) ve Mekansal Bulgular
 
-### 📊 Exploratory Data Analysis & Spatial Findings
-
-| Exploratory Distributions (Severity, Hour, Day, Weather) | Correlation Matrix (~7.7M Records) |
+| Keşifsel Dağılımlar (Şiddet, Saat, Gün, Hava Durumu) | Korelasyon Matrisi (~7.7 Milyon Kayıt) |
 | :---: | :---: |
-| ![EDA Distributions](assets/eda_dagilimlar.png) | ![Correlation Matrix](assets/correlation_matrix.png) |
+| ![Keşifsel Dağılımlar](assets/eda_dagilimlar.png)[cite: 1] | ![Korelasyon Matrisi](assets/correlation_matrix.png)[cite: 7] |
 
-| US Spatial Accident Density (Log Scale) | Spatial Clustering by Severity (Minor vs. Severe) |
+| Tüm ABD Mekansal Yoğunluk Haritası | Kaza Şiddetine Göre Mekansal Kümeleme |
 | :---: | :---: |
-| ![USA Spatial Density](assets/usa_spatial_density.jpg) | ![Severity Clustering](assets/severity_clustering.jpg) |
+| ![ABD Yoğunluk Haritası](assets/usa_spatial_density.jpg)[cite: 8] | ![Şiddet Kümeleme](assets/severity_clustering.jpg)[cite: 9] |
 
-* **Rush-Hour & Weekday Peaks:** Accidents peak sharply during morning (07:00–08:00) and evening (16:00–17:00) commutes on weekdays, while weekend volume drops significantly.
-* **Weather Paradox:** Over 70% of accidents occur under clear or fair visibility conditions due to higher traffic volume and speeds, whereas fog/precipitation disproportionately elevates severity.
+* **Zirve Saatler ve İş Günleri:** Kazalar hafta içi sabah (07:00–08:00) ve akşam (16:00–17:00) işe gidiş-dönüş saatlerinde zirve yaparken hafta sonları belirgin şekilde düşmektedir.
+* **Hava Durumu Bulgusu:** Toplam kaza sayısının %70'inden fazlası açık ve görüş mesafesinin yüksek olduğu havalarda (yüksek trafik hacmi ve hız nedeniyle) gerçekleşirken; sis, yağış ve düşük görüş mesafesi kazanın şiddetini (Severity 3–4) yukarı çekmektedir.
 
----
+### 🤖 Makine Öğrenmesi Hattı ve Model Karşılaştırması
 
-### 🤖 Machine Learning Pipeline & Model Benchmarks
+* **Veri Sızıntısının Önlenmesi:** Kaza gerçekleştikten sonra oluşan değişkenler (`End_Time`, `End_Lat`, `End_Lng`, `Description` ve kaza sonrası etki mesafesi `Etki_Mesafesi_Mil`) canlı tahmin modelinden çıkarılarak modelin yalnızca **kaza öncesi (pre-crash) 14 öznitelik** ile çalışması sağlanmıştır.
 
-#### 1. Data Leakage Prevention & Feature Selection
-Post-crash variables (such as `End_Time`, `End_Lat`, `End_Lng`, `Description`, and impact distance `Etki_Mesafesi_Mil`) were excluded from the production inference model so predictions rely strictly on **14 pre-crash environmental, temporal, spatial, and road-infrastructure features**.
-
-| Gini Feature Importance | SHAP Feature Impact Summary (Explainable AI) |
+| Gini Öznitelik Önemi | SHAP Özellik Etki Analizi (Açıklanabilir Yapay Zeka) |
 | :---: | :---: |
-| ![Feature Selection](assets/feature_selection.png) | ![SHAP Summary](assets/shap_summary.png) |
+| ![Öznitelik Seçimi](assets/feature_selection.png)[cite: 2] | ![SHAP Analizi](assets/shap_summary.png)[cite: 6] |
 
-#### 2. Model Comparison (~1.54 Million Test Records)
-Three classifiers were benchmarked on an 80/20 split (~1.54M holdout test rows):
-
-| Model | ROC-AUC Score | Notes |
+| Model | ROC-AUC Skoru | Değerlendirme |
 | :--- | :---: | :--- |
-| **Logistic Regression (Baseline)** | `0.6386` | Linear baseline; high false-positive rate on minority severe class. |
-| **Random Forest** | `0.8330` | Strong non-linear capture; higher memory footprint. |
-| **LightGBM (Production Model)** | **`0.8814`** *(14-feat pre-crash: `0.8379`)* | Best discrimination speed & accuracy; paired with F1 threshold optimization (`0.6052` – `0.6423`). |
+| **Logistic Regression (Taban Model)** | `0.6386` | Doğrusal taban model; ağır kazalarda yüksek yanlış pozitif oranı. |
+| **Random Forest** | `0.8330` | Doğrusal olmayan ilişkileri yakalar ancak bellek ve çıkarım maliyeti yüksektir. |
+| **LightGBM (Canlı Model)** | **`0.8814`** *(14 kaza-öncesi özellik: `0.8379`)* | En yüksek ayırt edicilik ve hız; F1 eşik optimizasyonu (`0.6052` – `0.6423`) ile dengelenmiştir. |
 
-| ROC-AUC Model Comparison | Confusion Matrices Across Models | Threshold & F1 Optimization |
+| ROC Eğrisi Karşılaştırması | Karmaşıklık Matrisleri | Optimal Karar Eşiği (Threshold) Analizi |
 | :---: | :---: | :---: |
-| ![ROC Curve](assets/roc_curve.png) | ![Confusion Matrices](assets/confusion_matrices.png) | ![Threshold Optimization](assets/threshold_optimization.png) |
+| ![ROC Eğrisi](assets/roc_curve.png)[cite: 4] | ![Karmaşıklık Matrisleri](assets/confusion_matrices.png)[cite: 3] | ![Eşik Optimizasyonu](assets/threshold_optimization.png)[cite: 5] |
 
----
-
-### ⚙️ Local Installation & Execution
+### ⚙️ Kurulum ve Çalıştırma
 
 ```bash
-# 1. Clone the repository
 git clone [https://github.com/ahmetemek/kaza-risk-tahmini.git](https://github.com/ahmetemek/kaza-risk-tahmini.git)
 cd kaza-risk-tahmini
-
-# 2. Install dependencies
 pip install -r requirements.txt
-
-# 3. Launch the Streamlit application
 streamlit run app.py
