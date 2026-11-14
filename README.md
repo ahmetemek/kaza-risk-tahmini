@@ -9,15 +9,13 @@
 [![SHAP](https://img.shields.io/badge/Explainable%20AI-SHAP-FF4B4B)](https://shap.readthedocs.io/)
 [![Plotly](https://img.shields.io/badge/Visuals-Plotly%206.0%2B-3F4F75?logo=plotly&logoColor=white)](https://plotly.com/)
 
-**[🚀 Canlı Uygulama / Live Demo](https://kaza-risk-tahmini-ajrghdxwg6dqjmmaitdygr.streamlit.app/) • [🇹🇷 Türkçe](#tr) • [🇬🇧 English](#en)**
+**[🚀 Canlı Uygulama / Live Demo](https://kaza-risk-tahmini-ajrghdxwg6dqjmmaitdygr.streamlit.app/) • [🇹🇷 Türkçe](#türkçe-dokümantasyon) • [🇬🇧 English](#english-documentation)**
 
 </div>
 
 ---
 
-<a id="tr"></a>
-
-## 🇹🇷 Türkçe Dokümantasyon
+## Türkçe Dokümantasyon
 
 ### 📌 Proje Özeti
 Bu proje, ABD genelinde 49 eyaleti kapsayan **~7.72 milyon trafik kazası kaydı** (2016–2023) üzerinde geliştirilmiş uçtan uca bir **Veri Madenciliği ve Karar Destek Platformudur**. Sistem; veri sızıntısından (data leakage) arındırılmış **LightGBM** kaza öncesi risk sınıflandırıcısını, **SHAP (Açıklanabilir Yapay Zeka)** analizini ve çok sayfalı etkileşimli **Streamlit** görselleştirme panelini tek çatı altında birleştirir.
@@ -53,7 +51,7 @@ Bu proje, ABD genelinde 49 eyaleti kapsayan **~7.72 milyon trafik kazası kaydı
 
 ### 🤖 Makine Öğrenmesi Hattı ve Model Karşılaştırması
 
-* **Veri Sızıntısının Önlenmesi:** Kaza gerçekleştikten sonra oluşan değişkenler (`End_Time`, `End_Lat`, `End_Lng`, `Description` ve kaza sonrası etki mesafesi `Etki_Mesafesi_Mil`) canlı tahmin modelinden çıkarılarak modelin yalnızca **kaza öncesi (pre-crash) 14 öznitelik** ile çalışması sağlanmıştır.
+* **Veri Sızıntısının Önlenmesi:** Kaza gerçekleştikten sonra oluşan değişkenler (`End_Time`, `End_Lat`, `End_Lng`, `Description` ve kaza sonrası etki mesafesi `Etki_Mesafesi_Mil`) canlı tahmin modelinden çıkarılarak modelin yalnızca **kaza öncesi (pre-crash) 14 öznitelik** ile çalışması sağlanmıştır[cite: 2, 7].
 
 | Gini Öznitelik Önemi | SHAP Özellik Etki Analizi (Açıklanabilir Yapay Zeka) |
 | :---: | :---: |
@@ -61,9 +59,9 @@ Bu proje, ABD genelinde 49 eyaleti kapsayan **~7.72 milyon trafik kazası kaydı
 
 | Model | ROC-AUC Skoru | Değerlendirme |
 | :--- | :---: | :--- |
-| **Logistic Regression (Taban Model)** | `0.6386` | Doğrusal taban model; ağır kazalarda yüksek yanlış pozitif oranı. |
-| **Random Forest** | `0.8330` | Doğrusal olmayan ilişkileri yakalar ancak bellek ve çıkarım maliyeti yüksektir. |
-| **LightGBM (Canlı Model)** | **`0.8814`** *(14 kaza-öncesi özellik: `0.8379`)* | En yüksek ayırt edicilik ve hız; F1 eşik optimizasyonu (`0.6052` – `0.6423`) ile dengelenmiştir. |
+| **Logistic Regression (Taban Model)** | `0.6386`[cite: 4] | Doğrusal taban model; ağır kazalarda yüksek yanlış pozitif oranı[cite: 3, 4]. |
+| **Random Forest** | `0.8330`[cite: 4] | Doğrusal olmayan ilişkileri yakalar ancak bellek ve çıkarım maliyeti yüksektir[cite: 3, 4]. |
+| **LightGBM (Canlı Model)** | **`0.8814`** *(14 kaza-öncesi özellik: `0.8379`)*[cite: 4] | En yüksek ayırt edicilik ve hız; F1 eşik optimizasyonu (`0.6052` – `0.6423`) ile dengelenmiştir[cite: 4, 5]. |
 
 | ROC Eğrisi Karşılaştırması | Karmaşıklık Matrisleri | Optimal Karar Eşiği (Threshold) Analizi |
 | :---: | :---: | :---: |
