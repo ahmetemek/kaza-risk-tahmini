@@ -1,117 +1,93 @@
-# 🚦 Smart City Mobility: Pre-Crash Risk Prediction & Explainable AI (XAI) Interface
+<div align="center">
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python&logoColor=white)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.32.0-FF4B4B?logo=streamlit&logoColor=white)
-![LightGBM](https://img.shields.io/badge/LightGBM-4.3.0-brightgreen)
-![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.4.0-F7931E?logo=scikit-learn&logoColor=white)
-![Folium](https://img.shields.io/badge/Folium-Map_Integration-77B829)
+# 🚦 Smart City Mobility: Pre-Crash Traffic Risk Prediction & Historical Analytics
+### Akıllı Şehir Ulaşımı: Kaza Öncesi Risk Tahmini ve Tarihsel Trafik Analizi
 
-This project is a machine learning system designed to predict traffic accident risks **before they occur** based on spatial, temporal, and meteorological data, strictly excluding post-crash data leakage variables. It was developed as a term project for the **Data Mining and Data Visualization** course.
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://kaza-risk-tahmini-ajrghdxwg6dqjmmaitdygr.streamlit.app/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![LightGBM](https://img.shields.io/badge/Model-LightGBM-02569B?logo=microsoft&logoColor=white)](https://lightgbm.readthedocs.io/)
+[![SHAP](https://img.shields.io/badge/Explainable%20AI-SHAP-FF4B4B)](https://shap.readthedocs.io/)
+[![Plotly](https://img.shields.io/badge/Visuals-Plotly%206.0%2B-3F4F75?logo=plotly&logoColor=white)](https://plotly.com/)
 
-The interactive web application is deployed live on Streamlit Community Cloud.
-👉 **[Try the Live Demo Here](https://kaza-risk-tahmini-ajrghdxwg6dqjmmaitdygr.streamlit.app/)**
+**[🚀 Live Demo / Canlı Uygulama](https://kaza-risk-tahmini-ajrghdxwg6dqjmmaitdygr.streamlit.app/) • [🇬🇧 English](#-english-documentation) • [🇹🇷 Türkçe](#-türkçe-dokümantasyon)**
 
----
-
-## 🌟 Key Features
-
-- **Live Map (Folium) Integration:** Users can click on any location across the USA on the interactive map, and the background model instantly calculates the regional risk score for that specific coordinate.
-- **Realistic Scenario Generator (RNG):** With a single click, the app generates geographically and meteorologically consistent random accident scenarios (e.g., heavy traffic on a winter evening in Chicago).
-- **Explainable AI (SHAP):** Moving beyond simple "High/Low Risk" outputs, the system provides text-based summaries explaining *why* a risk is high or low (e.g., lack of traffic signals at a junction), based on SHAP (SHapley Additive exPlanations) analysis.
-- **Optimal Decision Threshold:** Instead of the standard 0.50 threshold, the model utilizes an optimized threshold of **0.6052** (derived from the Precision-Recall curve) to maximize the F1-Score and significantly reduce false positives.
-
-## 🧠 Model Architecture & Dataset
-
-The system was trained on the massive **US Accidents Dataset (approx. 7.7 Million records)**. Following comprehensive Data Mining processes (EDA, data cleaning, and feature engineering), 14 pre-crash features (Latitude, Longitude, Pressure, Hour, Junction, etc.) were selected to prevent any data leakage.
-
-**Model Performance (LightGBM Classifier):**
-| Scenario | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| Default Threshold (0.50) | 74.34% | 41.51% | 77.54% | 0.5407 | **0.8379** |
-| **Optimal Threshold (0.6052)** | **80.19%** | **49.35%** | 64.10% | **0.5576** | **0.8379** |
-
-*Note: The model is primarily optimized against class imbalance using `class_weight='balanced'`.*
-
-## 📂 Project Structure
-
-```text
-├── app.py                      # Main Streamlit web interface and app logic
-├── kaza_risk_modeli.joblib     # Pre-trained LightGBM model and threshold settings
-├── requirements.txt            # Required Python libraries for deployment
-└── README.md                   # Project documentation
-```
-
-🚀 Running Locally
-To test the project on your local machine, follow these steps:
-
-Clone the Repository:
-git clone https://github.com/ahmetemek/kaza-risk-tahmini.git
-cd kaza-risk-tahmini
-Install Required Libraries:
-Ensure you have Python installed, then run:
-pip install -r requirements.txt
-Launch the Application:
-streamlit run app.py
-Your browser will automatically open the app at http://localhost:8501.
-
-👨‍💻 Developer
-[Ahmet Emek] - Aydın Adnan Menderes University - Artificial Intelligence Operation
-
-# 🚦 Akıllı Şehir Ulaşımı: Kaza Öncesi Risk Tahmini ve Açıklanabilir Yapay Zekâ (XAI) Arayüzü
-
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python&logoColor=white)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.32.0-FF4B4B?logo=streamlit&logoColor=white)
-![LightGBM](https://img.shields.io/badge/LightGBM-4.3.0-brightgreen)
-![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.4.0-F7931E?logo=scikit-learn&logoColor=white)
-![Folium](https://img.shields.io/badge/Folium-Map_Integration-77B829)
-
-Bu proje, trafik kazaları oluştuktan sonraki sızıntı (data leakage) verilerini dışarıda bırakarak, kazaların **gerçekleşmeden önce** mekânsal, zamansal ve meteorolojik verilere dayalı olarak tahmin edilmesini sağlayan bir makine öğrenmesi sistemidir. **Veri Madenciliği ve Veri Görselleştirme** dersi dönem projesi kapsamında geliştirilmiştir.
-
-Uygulama canlı olarak [Streamlit Community Cloud](https://share.streamlit.io/) üzerinde çalışmaktadır.
-👉 **[Canlı Demoyu İnceleyin](https://kaza-risk-tahmini-ajrghdxwg6dqjmmaitdygr.streamlit.app/)**
+</div>
 
 ---
 
-## 🌟 Öne Çıkan Özellikler
+## 🇬🇧 English Documentation
 
-- **Canlı Harita (Folium) Entegrasyonu:** Kullanıcılar harita üzerinden ABD'nin herhangi bir noktasına tıkladığında, arka plandaki model o bölgenin risk skorunu anlık olarak hesaplar.
-- **Gerçekçi Senaryo Üretici (RNG):** Coğrafi ve meteorolojik kurallara uygun rastgele kaza senaryoları (Örn: Los Angeles'ta kış akşamı yoğun trafik) tek tuşla üretilebilir.
-- **Açıklanabilir Yapay Zekâ (SHAP):** Yalnızca "Yüksek/Düşük Risk" demekle kalmaz, SHAP (SHapley Additive exPlanations) analizlerine dayanarak riski hangi altyapısal veya zamansal faktörün artırdığını/azalttığını kullanıcıya metinsel olarak özetler.
-- **Optimal Karar Eşiği:** Model standart 0.50 eşiği yerine, Precision-Recall optimizasyonu ile hesaplanmış olan **0.6052** optimal eşiğini kullanarak sahte alarmları (False Positive) en aza indirir.
+### 📌 Project Overview
+This project is an end-to-end **Data Mining & Decision Support Platform** built on **~7.72 million traffic accident records** across 49 US states (2016–2023). The system combines a leak-free **LightGBM** pre-crash severity risk classifier with **SHAP (Explainable AI)** and an interactive multi-page **Streamlit** analytics dashboard capable of sub-second regional queries, batch CSV risk scoring, and automated executive report generation.
 
-## 🧠 Model Mimarisi ve Veri Seti
+* **Live Application:** [kaza-risk-tahmini.streamlit.app](https://kaza-risk-tahmini-ajrghdxwg6dqjmmaitdygr.streamlit.app/)
+* **Source Dataset:** [US Accidents (2016 - 2023) — Kaggle (Sobhan Moosavi)](https://www.kaggle.com/datasets/sobhanmoosavi/us-accidents)
 
-Sistem, **US Accidents (Yaklaşık 7.7 Milyon Kayıt)** veri seti üzerinde eğitilmiştir. Veri madenciliği süreçleri (EDA, temizleme, özellik mühendisliği) sonucunda modele sızıntı yaratmayacak 14 adet kaza öncesi özellik (Enlem, Boylam, Basınç, Saat, Kavşak vb.) seçilmiştir.
+---
 
-**Model Performansı (LightGBM Classifier):**
-| Senaryo | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| Standart Eşik (0.50) | %74.34 | %41.51 | %77.54 | 0.5407 | **0.8379** |
-| **Optimal Eşik (0.6052)** | **%80.19** | **%49.35** | %64.10 | **0.5576** | **0.8379** |
+### 🏗️ System Architecture & Key Modules
+To ensure cloud deployment speed without sacrificing analytical depth, the 7.72M-row raw dataset was engineered into lightweight pre-aggregated relational slices (`gorsellestirme_verisi.csv`, `sehir_hava_verisi.csv`, `zaman_yogunluk_verisi.csv`):
 
-*Not: Model ağırlıklı olarak sınıf dengesizliğine karşı (class_weight='balanced') optimize edilmiştir.*
+1. **🔮 Risk Simulation & Batch Prediction (`pages/1_Simulasyon.py`)**
+   * **Single-Scenario Simulator:** Interactive map & parameter controls (coordinates, weather metrics, road infrastructure flags, rush-hour indicators) with real-time **SHAP waterfall/force impact breakdown**.
+   * **Batch CSV Scoring Engine:** Upload multi-row road/weather CSV files (with downloadable template) to score hundreds of scenarios in bulk and export risk classifications.
+2. **📊 Historical Analytics & Regional Explorer (`pages/2_Veri_Gorsellestirme.py`)**
+   * **Dynamic Year Slider & Interactive Map:** Powered by `px.scatter_map` with click-to-inspect city selection across 1,500+ hotspots.
+   * **Head-to-Head City Comparison & Rush-Hour Heatmaps:** Compare any two US cities across volume and severity trends, or inspect 7×24 day/hour accident density matrices.
+   * **One-Click Executive Reports:** Export filtered regional summaries (`.md`) and subsets (`.csv`).
+3. **📈 Model Performance & Methodology (`pages/3_Model_Metodolojisi.py`)**
+   * Interactive decision-threshold sensitivity simulator, live LightGBM feature importance inspection, and analytical notes on post-2020 sensor collection bias.
 
-## 📂 Proje Yapısı
+---
 
-```text
-├── app.py                      # Streamlit web arayüzü ve ana uygulama kodu
-├── kaza_risk_modeli.joblib     # Eğitilmiş LightGBM modeli ve eşik değerleri
-├── requirements.txt            # Uygulamanın çalışması için gerekli kütüphaneler
-└── README.md                   # Proje dokümantasyonu
-```
+### 📊 Exploratory Data Analysis & Spatial Findings
 
-🚀 Yerelde (Local) Çalıştırma
-Projeyi kendi bilgisayarınızda test etmek için aşağıdaki adımları izleyin:
+| Exploratory Distributions (Severity, Hour, Day, Weather) | Correlation Matrix (~7.7M Records) |
+| :---: | :---: |
+| ![EDA Distributions](assets/eda_dagilimlar.png) | ![Correlation Matrix](assets/correlation_matrix.png) |
 
-Repoyu Klonlayın:
-git clone https://github.com/ahmetemek/kaza-risk-tahmini.git
+| US Spatial Accident Density (Log Scale) | Spatial Clustering by Severity (Minor vs. Severe) |
+| :---: | :---: |
+| ![USA Spatial Density](assets/usa_spatial_density.jpg) | ![Severity Clustering](assets/severity_clustering.jpg) |
+
+* **Rush-Hour & Weekday Peaks:** Accidents peak sharply during morning (07:00–08:00) and evening (16:00–17:00) commutes on weekdays, while weekend volume drops significantly.
+* **Weather Paradox:** Over 70% of accidents occur under clear or fair visibility conditions due to higher traffic volume and speeds, whereas fog/precipitation disproportionately elevates severity.
+
+---
+
+### 🤖 Machine Learning Pipeline & Model Benchmarks
+
+#### 1. Data Leakage Prevention & Feature Selection
+Post-crash variables (such as `End_Time`, `End_Lat`, `End_Lng`, `Description`, and impact distance `Etki_Mesafesi_Mil`) were excluded from the production inference model so predictions rely strictly on **14 pre-crash environmental, temporal, spatial, and road-infrastructure features**.
+
+| Gini Feature Importance | SHAP Feature Impact Summary (Explainable AI) |
+| :---: | :---: |
+| ![Feature Selection](assets/feature_selection.png) | ![SHAP Summary](assets/shap_summary.png) |
+
+#### 2. Model Comparison (~1.54 Million Test Records)
+Three classifiers were benchmarked on an 80/20 split (~1.54M holdout test rows):
+
+| Model | ROC-AUC Score | Notes |
+| :--- | :---: | :--- |
+| **Logistic Regression (Baseline)** | `0.6386` | Linear baseline; high false-positive rate on minority severe class. |
+| **Random Forest** | `0.8330` | Strong non-linear capture; higher memory footprint. |
+| **LightGBM (Production Model)** | **`0.8814`** *(14-feat pre-crash: `0.8379`)* | Best discrimination speed & accuracy; paired with F1 threshold optimization (`0.6052` – `0.6423`). |
+
+| ROC-AUC Model Comparison | Confusion Matrices Across Models | Threshold & F1 Optimization |
+| :---: | :---: | :---: |
+| ![ROC Curve](assets/roc_curve.png) | ![Confusion Matrices](assets/confusion_matrices.png) | ![Threshold Optimization](assets/threshold_optimization.png) |
+
+---
+
+### ⚙️ Local Installation & Execution
+
+```bash
+# 1. Clone the repository
+git clone [https://github.com/ahmetemek/kaza-risk-tahmini.git](https://github.com/ahmetemek/kaza-risk-tahmini.git)
 cd kaza-risk-tahmini
-Gerekli Kütüphaneleri Yükleyin:
-Bilgisayarınızda Python yüklü olduğundan emin olun.
-pip install -r requirements.txt
-Uygulamayı Başlatın:
-streamlit run app.py
-Tarayıcınız otomatik olarak açılacak ve uygulama http://localhost:8501 adresinde çalışacaktır.
 
-👨‍💻 Geliştirici
-[Ahmet Emek] - Aydın Adnan Menderes Üniversitesi - Yapay Zekâ Operatörlüğü
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Launch the Streamlit application
+streamlit run app.py
